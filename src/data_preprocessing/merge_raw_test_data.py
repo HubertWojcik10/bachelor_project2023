@@ -74,14 +74,20 @@ class RawTestData:
         selected_columns = ["pair_id", "id1", "text1", "id2", "text2", "Overall"]
         merged_test_data = merged_test_data[selected_columns]
 
-        print(f"Merged test data. Shape: {merged_test_data.shape}. Columns: {merged_test_data.columns}")
-        #create a csv file with the merged_test_data
-        merged_test_data.to_csv("../../data/test/merged_test_data.csv", index=False)    
+        print(f"Merged test data. Shape: {merged_test_data.shape}. Columns: {merged_test_data.columns}")    
+        self.create_csv(merged_test_data)
         
-        return merged_test_data
+    
+    def create_csv(self,data):
+        """
+            Save the merged test data to the given path
+        """
+
+        data.to_csv("../../data/test/merged_test_data.csv", index=False)
 
 
 if __name__ == "__main__":
     raw_test_data = RawTestData()
     raw_test_data.describe_data()
-    merged_test_data = raw_test_data.merge_data()
+    raw_test_data.merge_data()
+    
