@@ -75,7 +75,9 @@ class RawTestData:
         merged_test_data = merged_test_data[selected_columns]
 
         print(f"Merged test data. Shape: {merged_test_data.shape}. Columns: {merged_test_data.columns}")
-
+        #create a csv file with the merged_test_data
+        merged_test_data.to_csv("../../data/test/merged_test_data.csv", index=False)    
+        
         return merged_test_data
 
 
