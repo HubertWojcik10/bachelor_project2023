@@ -24,8 +24,7 @@ class RawTestData:
 
         return test_data, test_annotated_pairs
 
-    @staticmethod
-    def _preprocess_test_data(test_data):
+    def _preprocess_test_data(self, test_data):
         """
             Static method to preprocess test data:
                 - extract id and text from n1_data and n2_data columns
@@ -36,6 +35,8 @@ class RawTestData:
         test_data['text1'] = test_data['n1_data'].apply(lambda x: x['text'])
         test_data['id2'] = test_data['n2_data'].apply(lambda x: x['id'])
         test_data['text2'] = test_data['n2_data'].apply(lambda x: x['text'])
+        test_data['lang1'] = test_data['n1_data'].apply(lambda x: x['meta_lang'])
+        test_data['lang2'] = test_data['n2_data'].apply(lambda x: x['meta_lang'])
 
         # drop n1_data and n2_data columns
         test_data = test_data.drop(columns=['n1_data', 'n2_data'])
@@ -66,28 +67,25 @@ class RawTestData:
         """
             Merge test data and test annotated pairs on pair_id
             Returns:
-                merged_test_data: a dataframe with columns: pair_id, id1, text1, id2, text2, Overall
+                merged_test_data: a dataframe with columns: pair_id, id1, text1, id2, text2, Overall, lang1, lang2
         """
 
         merged_test_data = pd.merge(self.test_annotated_pairs, self.test_data, on="pair_id", how="inner")
 
-        selected_columns = ["pair_id", "id1", "text1", "id2", "text2", "Overall"]
+        selected_columns = ["pair_id", "id1", "text1", "id2", "text2", "Overall", "lang1", "lang2"]
         merged_test_data = merged_test_data[selected_columns]
 
         print(f"Merged test data. Shape: {merged_test_data.shape}. Columns: {merged_test_data.columns}")    
         self.create_csv(merged_test_data)
         
     
-    def create_csv(self,data):
+    def create_csv(self, data):
         """
             Save the merged test data to the given path
         """
 
         data.to_csv("../../data/test/merged_test_data.csv", index=False)
 
-
 if __name__ == "__main__":
-    raw_test_data = RawTestData()
-    raw_test_data.describe_data()
-    raw_test_data.merge_data()
-    
+    rtd = RawTestData()
+    rtd.merge_data()
