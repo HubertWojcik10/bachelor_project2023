@@ -1,5 +1,6 @@
 import pandas as pd
 import math
+import json
 
 class DevUtils:
     @staticmethod
@@ -22,4 +23,19 @@ class DevUtils:
             raise ValueError("Invalid strategy")
 
         return df
+    
+    @staticmethod
+    def load_params(params_path: str) -> dict:
+        """
+            Load parameters from the given path
+            Args:
+                params_path: str
+            Returns:
+                params: dict
+        """
+
+        with open(params_path, 'r') as f:
+            params = json.load(f)
+
+        return params
 
