@@ -3,13 +3,15 @@ from data_preprocessing.train_data import RawTrainData
 import pandas as pd
 import torch
 from torch import Tensor
-from torch.utils.data import TensorDataset, DataLoader
+from torch.utils.data import TensorDataset, DataLoader, random_split
 from utils.dev_utils import DevUtils
 from typing import Tuple, List
 from transformers import XLMRobertaForSequenceClassification, XLMRobertaTokenizer, XLMRobertaConfig
 
 import logging
 logging.disable(logging.WARNING)
+
+logging.basicConfig(level=logging.INFO)
 
 class Baseline:
     def __init__(self, params_dict: dict):
@@ -22,7 +24,7 @@ class Baseline:
         self.shuffle = params_dict["shuffle"]
 
         self.tokenizer = XLMRobertaTokenizer.from_pretrained(self.model_name)
-        self.model = XLMRobertaForSequenceClassification.from_pretrained(self.model_name)
+        self.model = XLMRobertaForSequenceClassification.from_pretrained(self.model_name, num_labels=1)
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.learning_rate)
         
         self.train_data, self.test_data = self.get_data(params_dict["train_data_path"], params_dict["test_data_path"])
@@ -33,8 +35,8 @@ class Baseline:
         """
             Manage the device to run the model on
         """
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model.to(device)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model.to(self.device)
 
     def get_data(self, train_data_path: str, test_data_path: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
@@ -59,7 +61,6 @@ class Baseline:
             shorten_ids =  tokenized_text["input_ids"][:, :200].tolist()[0] + tokenized_text["input_ids"][:, -54:].tolist()[0]
         else:
             shorten_ids = tokenized_text["input_ids"].tolist()[0] + [self.tokenizer.pad_token_id] * (254 - tokenized_text["input_ids"].shape[1])
-
         return self.tokenizer.decode(shorten_ids) 
 
     def tokenize_texts(self, df: pd.DataFrame, col1: str = "text1_short", col2: str = "text2_short") -> Tuple[Tensor, Tensor]:
@@ -67,14 +68,18 @@ class Baseline:
             Tokenize the input texts and return the input_ids and attention_mask
         """
 
+        #logging.info("Tokenizing the texts...")
+
         texts1, texts2 = df[col1], df[col2]
         input_ids, attention_mask = [], []
 
         for idx, (t1, t2) in enumerate(zip(texts1, texts2)):
             tokenized_text = self.tokenizer(t1, t2, return_tensors="pt", padding="max_length", 
                                     truncation=True, add_special_tokens=True, max_length=512)
-            input_ids.append(tokenized_text["input_ids"])
-            attention_mask.append(tokenized_text["attention_mask"])
+            input_ids.append(tokenized_text["input_ids"].tolist()[0])
+            attention_mask.append(tokenized_text["attention_mask"].tolist()[0])
+
+        #logging.info("Tokenization complete")
 
         return torch.tensor(input_ids).long(), torch.tensor(attention_mask).long()
 
@@ -82,6 +87,9 @@ class Baseline:
         """
             Split the data into training and validation sets using the DataLoader
         """
+
+        #logging.info("Splitting the data and creating the data loaders...")
+        print("Splitting the data and creating the data loaders...")
 
         dataset = TensorDataset(input_ids, attention_mask, labels)
         
@@ -99,13 +107,19 @@ class Baseline:
         """
             Train the model
         """
+
+        #logging.info("Training the model...")
+        print(f"batch size: {self.batch_size}, data size: {len(loader)}")
+
         total_loss = 0
         losses = []
         self.model.train()
 
         for epoch in range(self.epochs):
+            #logging.info(f"Epoch {epoch+1} of {self.epochs}")
+            print(f"{'-'*10} Epoch {epoch+1} of {self.epochs} {'-'*10}")
             for idx, (ids, att, val) in enumerate(loader):
-                ids, att, val = ids.to(device), att.to(device), val.to(device)
+                ids, att, val = ids.to(self.device), att.to(self.device), val.to(self.device)
 
                 outputs = self.model(input_ids=ids, attention_mask=att, labels=val)
                 loss, logits = outputs[:2]
@@ -122,7 +136,7 @@ class Baseline:
                     print("average training loss: {0:.2f}".format(total_loss / (idx+1)))
                     print("current loss:", loss.item())
 
-                    print(f"logits: {logits}")
+                    #print(f"logits: {logits}")
 
             # store the loss value for plotting the learning curve.
             avg_train_loss = total_loss / len(loader)
@@ -135,17 +149,21 @@ class Baseline:
         """
             Run the model
         """
-
+ 
+        print("Shortening the texts...")
         self.train_data["text1_short"] = self.train_data["text1"].apply(self.shorten_text)
         self.train_data["text2_short"] = self.train_data["text2"].apply(self.shorten_text)
 
+        print("Tokenizing the texts...")
         input_ids, attention_mask = self.tokenize_texts(self.train_data)
-        labels = torch.tensor(self.train_data["overall_int"].values)
+        score = torch.tensor(self.train_data["overall"]).float()
 
+        print("Splitting the data and creating the data loaders...")
         tensor_dataset = TensorDataset(input_ids, attention_mask, score.view(-1, 1))
-        train_loader, val_loader = split_data(input_ids, attention_mask, labels, tensor_dataset)
+        train_loader, val_loader = self.split_data(input_ids, attention_mask, score, tensor_dataset)
 
-        losses = train(train_loader)
+        print("Training the model...")
+        losses = self.train(train_loader)
         print(losses)
         print("Training complete")
 
