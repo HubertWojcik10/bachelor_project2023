@@ -15,6 +15,9 @@ class DevUtils:
                 df: pd.DataFrame
         """
 
+        #make all columns lowercase
+        df.columns = df.columns.str.lower()
+
         if strategy == "round_up":
             df["overall_int"] = df["overall"].apply(lambda x: math.ceil(x) if x % 1 >= 0.5 else math.floor(x))
         elif strategy == "round_down":
