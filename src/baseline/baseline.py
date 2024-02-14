@@ -7,6 +7,8 @@ from torch.utils.data import TensorDataset, DataLoader, random_split
 from utils.dev_utils import DevUtils
 from typing import Tuple, List
 from transformers import XLMRobertaForSequenceClassification, XLMRobertaTokenizer, XLMRobertaConfig
+import numpy as np
+import time
 
 import logging
 logging.disable(logging.WARNING)
@@ -22,6 +24,7 @@ class Baseline:
         self.learning_rate = params_dict["learning_rate"]
         self.train_size = params_dict["train_size"]
         self.shuffle = params_dict["shuffle"]
+        self.model_save_path = params_dict["model_save_path"]
 
         self.tokenizer = XLMRobertaTokenizer.from_pretrained(self.model_name)
         self.model = XLMRobertaForSequenceClassification.from_pretrained(self.model_name, num_labels=1)
@@ -103,6 +106,25 @@ class Baseline:
 
         return train_loader, val_loader
 
+    def predict(self, loader: DataLoader) -> List:
+        """
+            Predict the scores
+        """
+
+        self.model.eval()
+        dev_true, dev_pred = [], []
+
+        for idx, (ids, att, val) in enumerate(loader):
+            ids, att, val = ids.to(self.device), att.to(self.device), val.to(self.device)
+            with torch.no_grad():
+                outputs = self.model(input_ids=ids, attention_mask=att, labels=val)
+                loss, logits = outputs[:2]
+
+                dev_true.extend(val.cpu().numpy().tolist()[0])
+                dev_pred.extend(logits.cpu().numpy().tolist()[0])
+
+        return dev_true, dev_pred
+
     def train(self, loader: DataLoader):
         """
             Train the model
@@ -111,13 +133,16 @@ class Baseline:
         #logging.info("Training the model...")
         print(f"batch size: {self.batch_size}, data size: {len(loader)}")
 
+        best_pearson = -1.0
         total_loss = 0
         losses = []
         self.model.train()
 
         for epoch in range(self.epochs):
+            start_time = time.time()
             #logging.info(f"Epoch {epoch+1} of {self.epochs}")
             print(f"{'-'*10} Epoch {epoch+1} of {self.epochs} {'-'*10}")
+
             for idx, (ids, att, val) in enumerate(loader):
                 ids, att, val = ids.to(self.device), att.to(self.device), val.to(self.device)
 
@@ -138,6 +163,17 @@ class Baseline:
 
                     #print(f"logits: {logits}")
 
+            print("starting validation...")
+            dev_true, dev_pred = self.predict(loader)
+            cur_pearson = np.corrcoef(dev_true, dev_pred)[0][1]
+
+            if cur_pearson > best_pearson:
+                best_pearson = cur_pearson
+                torch.save(self.model.state_dict(), self.model_save_path)
+
+            print("Current dev pearson is {:.4f}, best pearson is {:.4f}".format(cur_pearson, best_pearson))
+            print("Time costed : {}s \n".format(round(time.time() - start_time, 3)))
+            
             # store the loss value for plotting the learning curve.
             avg_train_loss = total_loss / len(loader)
             print("average training loss: {0:.2f}".format(avg_train_loss))

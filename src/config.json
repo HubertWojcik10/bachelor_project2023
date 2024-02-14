@@ -6,6 +6,7 @@
     "batch_size": 8,
     "epochs": 3,
     "learning_rate": 1e-5,
-    "train_size": 0.1,
-    "shuffle": true
+    "train_size": 0.01,
+    "shuffle": true,
+    "model_save_path": "saved_models/baseline/best_baseline.pth"
 }
