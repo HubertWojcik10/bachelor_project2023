@@ -1,5 +1,12 @@
 {
     "train_data_path": "../data/train/train.csv",
     "test_data_path": "../data/test/final_test_pairs.csv",
-    "rounding_strategy": "round_up"
+    "rounding_strategy": "round_up",
+    "model": "xlm-roberta-base",
+    "batch_size": 8,
+    "epochs": 3,
+    "learning_rate": 1e-5,
+    "train_size": 0.01,
+    "shuffle": true,
+    "model_save_path": "saved_models/baseline/best_baseline.pth"
 }
