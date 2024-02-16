@@ -98,8 +98,8 @@ class Model:
         for idx, (ids, att, val) in enumerate(loader):
             ids, att, val = ids.to(self.device), att.to(self.device), val.to(self.device)
             with torch.no_grad():
-                outputs = model(input_ids=ids, attention_mask=att, labels=val)
-                loss, logits = outputs[:2]
+                output = model(input_ids=ids, attention_mask=att)
+                logits = output.logits
 
                 dev_true.extend(val.cpu().numpy().tolist())
                 dev_pred.extend(logits.cpu().numpy().tolist())
