@@ -80,9 +80,9 @@ class Baseline:
             tokenized_text = self.tokenizer(t1, t2, return_tensors="pt", padding="max_length", 
                                     truncation=True, add_special_tokens=True, max_length=512)
             input_ids.append(tokenized_text["input_ids"].tolist()[0])
-            attention_mask.append(tokenized_text["attention_mask"].tolist()[0])
 
-        #logging.info("Tokenization complete")
+            att = [1 if i != 1 else 0 for i in tokenized_text["input_ids"].tolist()[0]]
+            attention_mask.append(att)
 
         return torch.tensor(input_ids).long(), torch.tensor(attention_mask).long()
 
@@ -125,13 +125,13 @@ class Baseline:
 
         return dev_true, dev_pred
 
-    def train(self, loader: DataLoader):
+    def train(self, train_loader: DataLoader, val_loader: DataLoader) -> List:
         """
             Train the model
         """
 
         #logging.info("Training the model...")
-        print(f"batch size: {self.batch_size}, data size: {len(loader)}")
+        print(f"batch size: {self.batch_size}, data size: {len(train_loader)}")
 
         best_pearson = -1.0
         total_loss = 0
@@ -143,7 +143,7 @@ class Baseline:
             #logging.info(f"Epoch {epoch+1} of {self.epochs}")
             print(f"{'-'*10} Epoch {epoch+1} of {self.epochs} {'-'*10}")
 
-            for idx, (ids, att, val) in enumerate(loader):
+            for idx, (ids, att, val) in enumerate(train_loader):
                 ids, att, val = ids.to(self.device), att.to(self.device), val.to(self.device)
 
                 outputs = self.model(input_ids=ids, attention_mask=att, labels=val)
@@ -164,7 +164,7 @@ class Baseline:
                     #print(f"logits: {logits}")
 
             print("starting validation...")
-            dev_true, dev_pred = self.predict(loader)
+            dev_true, dev_pred = self.predict(val_loader)
             cur_pearson = np.corrcoef(dev_true, dev_pred)[0][1]
 
             if cur_pearson > best_pearson:
@@ -175,7 +175,7 @@ class Baseline:
             print("Time costed : {}s \n".format(round(time.time() - start_time, 3)))
             
             # store the loss value for plotting the learning curve.
-            avg_train_loss = total_loss / len(loader)
+            avg_train_loss = total_loss / len(train_loader)
             print("average training loss: {0:.2f}".format(avg_train_loss))
             losses.append(avg_train_loss)
 
@@ -199,7 +199,7 @@ class Baseline:
         train_loader, val_loader = self.split_data(input_ids, attention_mask, score, tensor_dataset)
 
         print("Training the model...")
-        losses = self.train(train_loader)
+        losses = self.train(train_loader, val_loader, save_path=self.model_save_path)
         print(losses)
         print("Training complete")
 
