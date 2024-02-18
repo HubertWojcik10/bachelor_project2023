@@ -13,5 +13,5 @@ class Plots:
             ax[i].set_ylabel("loss")
 
         plt.show()
-        curr_time = datetime.now()
+        curr_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         fig.savefig(f"plots/loss_{curr_time}.png")

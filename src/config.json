@@ -9,5 +9,6 @@
     "train_size": 0.8,
     "shuffle": true,
     "model_save_path": "../saved_models/baseline/best_baseline.pth",
-    "summarizer_save_path": "../saved_models/text_summarizer/best_summarizer.pth"
+    "summarizer_save_path": "../saved_models/text_summarizer/best_summarizer.pth",
+    "log_dir": "../logs"
 }
