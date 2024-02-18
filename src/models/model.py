@@ -9,6 +9,8 @@ from typing import Tuple, List
 from transformers import XLMRobertaForSequenceClassification, XLMRobertaTokenizer, XLMRobertaConfig
 import numpy as np
 import time
+from collections import defaultdict
+from plots.plots import Plots
 
 import logging
 logging.disable(logging.WARNING)
@@ -42,13 +44,17 @@ class Model:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
 
-    def get_data(self, train_data_path: str, test_data_path: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def get_data(self, train_data_path: str, test_data_path: str, dev: bool = False) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
             Get the data from the paths
             Add the overall_int column to the dataframes
         """
         train_data = pd.read_csv(train_data_path)
         test_data = pd.read_csv(test_data_path)
+
+        if dev:
+            train_data = train_data[:50]
+            test_data = test_data[:50]
 
         return train_data, test_data
 
@@ -102,7 +108,7 @@ class Model:
                 logits = output.logits
 
                 dev_true.extend(val.cpu().numpy().tolist())
-                dev_pred.extend(logits.cpu().numpy().tolist())
+                dev_pred.extend(logits.cpu().flatten().numpy().tolist())
 
         cur_pearson = np.corrcoef(dev_true, dev_pred)[0][1]
         return dev_true, dev_pred, cur_pearson
@@ -112,24 +118,23 @@ class Model:
             Train the model
         """
 
-        #logging.info("Training the model...")
-        print(f"batch size: {self.batch_size}, data size: {len(train_loader)}")
-
         best_pearson = -1.0
         total_loss = 0
-        losses = []
+        losses = defaultdict(list)
         self.model.train()
 
         for epoch in range(self.epochs):
             start_time = time.time()
             #logging.info(f"Epoch {epoch+1} of {self.epochs}")
-            print(f"{'-'*10} Epoch {epoch+1} of {self.epochs} {'-'*10}")
+            print(f"\n{'-'*25} Epoch {epoch+1} of {self.epochs} {'-'*25}")
 
             for idx, (ids, att, val) in enumerate(train_loader):
                 ids, att, val = ids.to(self.device), att.to(self.device), val.to(self.device)
 
                 outputs = self.model(input_ids=ids, attention_mask=att, labels=val)
                 loss, logits = outputs[:2]
+
+                losses[epoch].append(loss.item())
 
                 self.optimizer.zero_grad()
                 loss.backward()
@@ -139,25 +144,21 @@ class Model:
 
                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
 
-                if idx % 10 == 0:
-                    print("average training loss: {0:.2f}".format(total_loss / (idx+1)))
-                    print("current loss:", loss.item())
-
+                if idx % 5 == 0:
+                    print(f"\nbatch {idx+1} of {len(train_loader)}")
+                    print(f"loss: {loss.item():.2f}\n")
                     #print(f"logits: {logits}")
 
             print("starting validation...")
             dev_true, dev_pred, cur_pearson = self.predict(val_loader, self.model)
 
+            print("Current dev pearson is {:.4f}, best pearson is {:.4f}".format(cur_pearson, best_pearson))
             if cur_pearson > best_pearson:
                 best_pearson = cur_pearson
+                print("Saving the model...")
                 torch.save(self.model.state_dict(), save_path)
 
-            print("Current dev pearson is {:.4f}, best pearson is {:.4f}".format(cur_pearson, best_pearson))
             print("Time costed : {}s \n".format(round(time.time() - start_time, 3)))
-            
-            # store the loss value for plotting the learning curve.
-            avg_train_loss = total_loss / len(train_loader)
-            print("average training loss: {0:.2f}".format(avg_train_loss))
-            losses.append(avg_train_loss)
 
-        return losses
+        Plots().plot_loss(losses)
+        #return losses

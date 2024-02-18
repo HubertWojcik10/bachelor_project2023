@@ -8,8 +8,9 @@ from torch.utils.data import TensorDataset, DataLoader
 from transformers import XLMRobertaForSequenceClassification
 
 class Baseline(Model):
-    def __init__(self, params_dict):
+    def __init__(self, params_dict, dev: bool = False):
         super().__init__(params_dict)
+        self.dev = dev
         self.params_dict = params_dict
 
     def shorten_text(self, text: str) -> Tensor:
@@ -30,7 +31,7 @@ class Baseline(Model):
             Run the model, train it if train is True
         """
 
-        train_data, test_data = self.get_data(self.params_dict["train_data_path"], self.params_dict["test_data_path"])
+        train_data, test_data = self.get_data(self.params_dict["train_data_path"], self.params_dict["test_data_path"], self.dev)
 
         if train:
             train_data["text1_short"] = train_data["text1"].apply(self.shorten_text)

@@ -10,13 +10,13 @@ if __name__ == "__main__":
 
     params = DevUtils.load_params("config.json")
 
-    #baseline = Baseline(params_dict=params)
-    #baseline.run(train=True)
+    baseline = Baseline(params_dict=params, dev=True)
+    baseline.run(train=True)
 
 
 
-    text_summarizer = TextSummarizer(params_dict=params)
-    text_summarizer.run(train=True)
+    #text_summarizer = TextSummarizer(params_dict=params)
+    #text_summarizer.run(train=True)
 
 
 
