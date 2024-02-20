@@ -1,6 +1,7 @@
 import pandas as pd
 import math
 import json
+import datetime
 
 class DevUtils:
     @staticmethod
@@ -41,4 +42,19 @@ class DevUtils:
             params = json.load(f)
 
         return params
+
+    @staticmethod
+    def save_losses_dict(losses: dict) -> None:
+        """
+            Save the losses dictionary to the given path
+            Args:
+                losses: dict
+        """
+
+        curr_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+        save_path = f"../logs/losses_{curr_time}.json"
+
+        with open(save_path, 'w') as f:
+            json.dump(losses, f)
 
