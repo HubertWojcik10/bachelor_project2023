@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from datetime import datetime
+import datetime
 
 class Plots:
     @staticmethod

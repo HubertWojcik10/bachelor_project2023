@@ -23,9 +23,10 @@ if __name__ == "__main__":
                 level=logging.DEBUG)
 
     logging.info(f"Params:\n{params}")
+    dev = False
 
     if args.baseline:
-        baseline = Baseline(params_dict=params, dev=True)
+        baseline = Baseline(params_dict=params, dev=dev)
         if args.train_baseline:
             baseline.run(train=True)
         else:
@@ -37,6 +38,3 @@ if __name__ == "__main__":
             text_summarizer.run(train=True)
         else:
             text_summarizer.run(train=False)
-
-
-

@@ -13,6 +13,7 @@ from collections import defaultdict
 from plots.plots import Plots
 
 import logging
+
 #logging.disable(logging.WARNING)
 
 #logging.basicConfig(level=logging.INFO)
@@ -59,8 +60,8 @@ class Model:
         test_data = pd.read_csv(test_data_path)
 
         if dev:
-            train_data = train_data[:50]
-            test_data = test_data[:50]
+            train_data = train_data[:20]
+            test_data = test_data[:20]
 
         return train_data, test_data
 
@@ -179,4 +180,6 @@ class Model:
             print("Time costed : {}s \n".format(round(time.time() - start_time, 3)))
 
         Plots().plot_loss(losses)
-        #return losses
+
+        # save the losses dictionary to a json file
+        DevUtils.save_losses_dict(losses)
