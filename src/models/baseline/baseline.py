@@ -49,6 +49,8 @@ class Baseline(Model):
         else:
             model = XLMRobertaForSequenceClassification.from_pretrained(self.model_name, num_labels=1)
             model.load_state_dict(torch.load(self.model_save_path))
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            model.to(device)
 
             print("Testing the model...")
             test_data["text1_short"] = test_data["text1"].apply(self.shorten_text)
