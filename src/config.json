@@ -4,7 +4,7 @@
     "rounding_strategy": "round_up",
     "model": "xlm-roberta-base",
     "batch_size": 8,
-    "epochs": 3,
+    "epochs": 5,
     "learning_rate": 1e-5,
     "train_size": 0.8,
     "shuffle": true,
