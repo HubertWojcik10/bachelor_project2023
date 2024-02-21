@@ -27,11 +27,7 @@ class TextSummarizer(Model):
             Run the model
         """
         if train:
-            train_data, test_data = self.get_data(self.params_dict["train_data_path"], self.params_dict["test_data_path"])
-
-            if "summary1" not in train_data.columns:
-                train_data = self.summarize(train_data)
-                test_data = self.summarize(test_data)
+            train_data, test_data = self.get_data(self.params_dict["summary_train_data_path"], self.params_dict["summary_test_data_path"])
 
             print("Tokenizing the texts...")
             input_ids, attention_mask = self.tokenize_texts(train_data, col1="summary1", col2="summary2")
@@ -41,9 +37,13 @@ class TextSummarizer(Model):
             train_loader, val_loader = self.split_data(input_ids, attention_mask, score)
 
             print("Training the model...")
-            self.train(train_loader)
+            self.train(train_loader, val_loader, self.summarizer_save_path)
         else:
-            model = torch.load(self.summarizer_save_path)
+            model = XLMRobertaForSequenceClassification.from_pretrained(self.model_name, num_labels=1)
+            model.load_state_dict(torch.load(self.summarizer_save_path))
+            
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            model.to(device)
 
             print("Testing the model...")
             test_data = self.summarize(test_data)
