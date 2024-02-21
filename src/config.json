@@ -1,6 +1,8 @@
 {
     "train_data_path": "../data/train/train.csv",
     "test_data_path": "../data/test/merged_test_data.csv",
+    "summary_train_data_path": "../data/train/train_sum.csv",
+    "summary_test_data_path": "../data/test/merged_test_data.csv",
     "rounding_strategy": "round_up",
     "model": "xlm-roberta-base",
     "batch_size": 8,
