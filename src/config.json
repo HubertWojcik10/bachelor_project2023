@@ -5,6 +5,7 @@
     "summary_test_data_path": "../data/test/merged_test_data.csv",
     "rounding_strategy": "round_up",
     "model": "xlm-roberta-base",
+    "summarizer_model": "Falconsai/text_summarization",
     "batch_size": 8,
     "epochs": 5,
     "learning_rate": 1e-5,

@@ -6,18 +6,21 @@ from torch import Tensor
 import torch
 from torch.utils.data import TensorDataset, DataLoader
 from transformers import XLMRobertaForSequenceClassification
+import logging
 
 class Baseline(Model):
-    def __init__(self, params_dict, dev: bool = False):
+    def __init__(self, params_dict, curr_time: str, dev: bool = False):
         super().__init__(params_dict)
         self.dev = dev
         self.params_dict = params_dict
+        self.curr_time = curr_time
 
     def shorten_text(self, text: str) -> Tensor:
         """
             Tokenize the input text and shorten it to 256 tokens. Then, return decoded text
         """
 
+        logging.info("Shortening text...")
         tokenized_text = self.tokenizer(text, return_tensors="pt", padding=False, truncation=False, add_special_tokens=False, max_length = None)
 
         if tokenized_text["input_ids"].shape[1] > 254:
@@ -37,22 +40,19 @@ class Baseline(Model):
             train_data["text1_short"] = train_data["text1"].apply(self.shorten_text)
             train_data["text2_short"] = train_data["text2"].apply(self.shorten_text)
 
-            print("Tokenizing the texts...")
             input_ids, attention_mask = self.tokenize_texts(train_data, col1="text1_short", col2="text2_short")
             score = torch.tensor(train_data["overall"]).float()
 
-            print("Splitting the data...")
             train_loader, val_loader = self.split_data(input_ids, attention_mask, score)
 
-            print("Training the model...")
-            self.train(train_loader, val_loader, self.model_save_path)
+            self.train(train_loader, val_loader, self.model_save_path, "baseline", self.curr_time)
         else:
             model = XLMRobertaForSequenceClassification.from_pretrained(self.model_name, num_labels=1)
             model.load_state_dict(torch.load(self.model_save_path))
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             model.to(device)
 
-            print("Testing the model...")
+            logging.info("Running on test data...")
             test_data["text1_short"] = test_data["text1"].apply(self.shorten_text)
             test_data["text2_short"] = test_data["text2"].apply(self.shorten_text)
             test_input_ids, test_attention_mask = self.tokenize_texts(test_data, col1="text1_short", col2="text2_short")

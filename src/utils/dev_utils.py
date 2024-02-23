@@ -2,18 +2,14 @@ import pandas as pd
 import math
 import json
 import datetime
+import matplotlib.pyplot as plt
+import os
 
 class DevUtils:
     @staticmethod
     def add_overall_int_column(df: pd.DataFrame, strategy: str ="round_up") -> pd.DataFrame:
         """
             Add a new column to the dataframe with the rounded overall value
-            Args:
-                df: pd.DataFrame
-                strategy: str - "round_up" or "round_down"
-                    param to decide if we include .5 in the upper or lower integer
-            Returns:
-                df: pd.DataFrame
         """
 
         #make all columns lowercase
@@ -32,10 +28,6 @@ class DevUtils:
     def load_params(params_path: str) -> dict:
         """
             Load parameters from the given path
-            Args:
-                params_path: str
-            Returns:
-                params: dict
         """
 
         with open(params_path, 'r') as f:
@@ -44,17 +36,31 @@ class DevUtils:
         return params
 
     @staticmethod
-    def save_losses_dict(losses: dict) -> None:
+    def save_losses_dict(losses: dict, model_name: str, curr_time: str) -> None:
         """
             Save the losses dictionary to the given path
-            Args:
-                losses: dict
         """
 
-        curr_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-        save_path = f"../logs/losses_{curr_time}.json"
+        save_path = f"../logs/{model_name}/{curr_time}/losses.json"
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
         with open(save_path, 'w') as f:
             json.dump(losses, f)
 
+    @staticmethod
+    def plot_loss(losses: str, model_name: str, curr_time: str) -> None:
+        """
+            Plot the loss of a model
+        """
+        num_epochs = len(losses)
+        fig, ax = plt.subplots(1, num_epochs, figsize=(30, 8))
+        for i, (epoch, loss) in enumerate(losses.items()):
+            ax[i].plot(loss, label=f"epoch {epoch+1}")
+            ax[i].set_title(f"epoch {epoch+1}")
+            ax[i].set_xlabel("batch")
+            ax[i].set_ylabel("loss")
+
+        plt.show()
+        save_path = f"../logs/{model_name}/{curr_time}/losses.png"
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        fig.savefig(save_path)

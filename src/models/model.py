@@ -10,13 +10,7 @@ from transformers import XLMRobertaForSequenceClassification, XLMRobertaTokenize
 import numpy as np
 import time
 from collections import defaultdict
-from plots.plots import Plots
-
 import logging
-
-#logging.disable(logging.WARNING)
-
-#logging.basicConfig(level=logging.INFO)
 
 class Model:
     def __init__(self, params_dict: dict):
@@ -125,7 +119,7 @@ class Model:
         logging.info(f"Finished prediction with pearson corr: {cur_pearson:.4f}")
         return dev_true, dev_pred, cur_pearson
 
-    def train(self, train_loader: DataLoader, val_loader: DataLoader, save_path: str) -> List:
+    def train(self, train_loader: DataLoader, val_loader: DataLoader, save_path: str, model_name: str, curr_time: str) -> List:
         """
             Train the model
         """
@@ -179,7 +173,9 @@ class Model:
             logging.info(f"Time costed : {round(time.time() - start_time, 3)}s")
             print("Time costed : {}s \n".format(round(time.time() - start_time, 3)))
 
-        Plots().plot_loss(losses)
+
+        # plot the loss
+        DevUtils.plot_loss(losses, model_name, curr_time)
 
         # save the losses dictionary to a json file
-        DevUtils.save_losses_dict(losses)
+        DevUtils.save_losses_dict(losses, model_name, curr_time)
