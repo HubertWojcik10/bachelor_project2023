@@ -57,4 +57,3 @@ class DevUtils:
 
         with open(save_path, 'w') as f:
             json.dump(losses, f)
-
