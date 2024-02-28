@@ -9,6 +9,6 @@ class Chunker:
     def chunk(self, text: str) -> List[List[int]]:
         tokenized_text = self.tokenizer(text, return_tensors="pt", padding= True, truncation=False, add_special_tokens=True, max_length= None)
         input_ids = tokenized_text["input_ids"].tolist()[0]
-        chunks = [[input_ids[i:i+self.max_length] for i in range(0, len(input_ids), self.max_length)]]
+        chunks = [input_ids[i:i+self.max_length] for i in range(0, len(input_ids), self.max_length)]
         return chunks
     
