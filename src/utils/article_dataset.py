@@ -12,11 +12,10 @@ class ArticleDataset(Dataset):
     def __len__(self) -> int:
         return len(self.df)
 
-    def __getitem__(self, idx) -> Tuple[str, str, List[List[int]], List[List[int]], List[Tuple[int, int]]]:
-        article1 = self.df.iloc[idx]["text1"]
-        article2 = self.df.iloc[idx]["text2"]
-        chunks1 = self.df.iloc[idx]["chunks1"]
-        chunks2 = self.df.iloc[idx]["chunks2"]
+    def __getitem__(self, idx):
+    # Assuming these are the elements you want to return
         combinations = self.df.iloc[idx]["combinations"]
+        values = self.df.iloc[idx]["overall"]
+        return combinations, values
 
-        return article1, article2, chunks1, chunks2, combinations
+

@@ -137,8 +137,11 @@ class Model:
             print(f"\n{'-'*25} Epoch {epoch+1} of {self.epochs} {'-'*25}")
 
             for idx, (ids, att, val) in enumerate(train_loader):
-                ids, att, val = ids.to(self.device), att.to(self.device), val.to(self.device)
 
+                print(type(ids))
+                print(ids.shape)
+
+                ids, att, val = ids.to(self.device), att.to(self.device), val.to(self.device)
                 outputs = self.model(input_ids=ids, attention_mask=att, labels=val)
                 loss, logits = outputs[:2]
 

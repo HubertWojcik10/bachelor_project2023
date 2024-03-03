@@ -1,5 +1,6 @@
 from models.baseline.baseline import Baseline
 from models.text_summarizer.text_summarizer import TextSummarizer
+from models.chunk_combinations.chunk_combinations import ChunkCombinationsModel
 import argparse
 from utils.dev_utils import DevUtils
 import logging
@@ -46,4 +47,8 @@ if __name__ == "__main__":
     elif args.model == 3:
         pass
     elif args.model == 4:
-        pass
+        chunk_combinations_model = ChunkCombinationsModel(params_dict=params, dev=dev, curr_time=curr_time)
+        if args.train:
+            chunk_combinations_model.run(train=True)
+        else:
+            chunk_combinations_model.run(train=False)
