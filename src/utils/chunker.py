@@ -1,10 +1,13 @@
 from typing import List, Tuple
+import numpy as np
+from collections import defaultdict
 import pandas as pd
 
 class Chunker:
     def __init__(self, tokenizer, max_length: int):
         self.tokenizer = tokenizer
         self.max_length = max_length
+        self.sep_token_id = self.tokenizer.sep_token_id
 
     def chunk(self, text: str) -> List[List[int]]:
         tokenized_text = self.tokenizer(text, return_tensors="pt", padding= True, truncation=False, add_special_tokens=True, max_length= None)
