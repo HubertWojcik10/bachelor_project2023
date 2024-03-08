@@ -34,11 +34,7 @@ class MlUtils:
             combined_arr = np.concatenate((input_ids1, input_ids2)).reshape(-1, 1)
              
             return combined_arr
-        '''concatenated = []
 
-        for comb1, comb2 in combinations:
-            concatenated.append(comb1 + comb2)
-
-        if len(concatenated) > max_combinations:
-            concatenated = random.sample(concatenated, max_combinations)
-        return concatenated'''
+    @staticmethod
+    def create_attention_mask(input_ids):
+        return np.where(input_ids != 0, 1, 0)

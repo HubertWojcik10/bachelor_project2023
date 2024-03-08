@@ -1,22 +1,25 @@
 import pandas as pd
-from transformers import XLMRobertaForSequenceClassification, XLMRobertaTokenizer, XLMRobertaConfig, pipeline
+from transformers import XLMRobertaForSequenceClassification, XLMRobertaTokenizer
 import torch
 from torch import Tensor
-from torch.utils.data import TensorDataset, DataLoader, random_split
 import numpy as np
 from typing import List, Tuple, Dict
 import time
 from sklearn.model_selection import train_test_split
 import logging
-import os
 from utils.dev_utils import DevUtils
+from utils.logger import Logger
 from models.model import Model
 from utils.combinations_chunker import Chunker
 from collections import defaultdict
+from utils.ml_utils import MlUtils
 
 
 class ChunkCombinationsModel(Model):
-    def __init__(self, params_dict:  Dict[str, any], curr_time: str, dev : bool = False) -> None:
+    """
+        Model nr 4: Create combinations of chunks and train the model
+    """
+    def __init__(self, params_dict:  Dict[str, any], curr_time: str, log_dir: str, dev : bool = False) -> None:
         super().__init__(params_dict)
         self.curr_time = time.strftime("%Y%m%d-%H%M%S")
         self.chunker = Chunker(self.tokenizer, 255)
@@ -25,6 +28,7 @@ class ChunkCombinationsModel(Model):
         self.dev = dev
         self.curr_time = curr_time
         self.model_name = "chunk_combinations"
+        self.logger = Logger(log_dir)
 
     def split_data(self, df: pd.DataFrame) -> Tuple[List[pd.DataFrame], List[pd.DataFrame]]:
         """
@@ -46,17 +50,19 @@ class ChunkCombinationsModel(Model):
         """
             Train the model
         """
+        self.logger.log_model_info("start_train")
         best_pearson = -1.0
         losses = defaultdict(list)
         self.model.train()
 
         for epoch in range(self.epochs):
-            logging.info(f"{'-'*25} Epoch {epoch+1} of {self.epochs} {'-'*25}")
+            self.logger.log_epoch_info(epoch, self.epochs)
             start_time = time.time()
 
             # iterate through the batches
             for _, batch in enumerate(train_batched_data):
-                combinations_list, labels_list = [], []
+                self.logger.log_memory_info()
+                combinations_list, attention_mask_list, labels_list = [], [], []
                 labels = batch["overall"].values
 
                 # iterate through the rows in the batch
@@ -66,14 +72,19 @@ class ChunkCombinationsModel(Model):
                         labels_list.append(float(label))
 
                         combinations_list.append(torch.tensor(combination, dtype=torch.float))
+                        att_mask = MlUtils.create_attention_mask(combination)
+                        attention_mask_list.append(att_mask)
 
                 # convert the lists to tensors and move them to the device
                 ids = torch.stack(combinations_list).long()
-                labels = torch.tensor(labels_list, dtype=torch.float).float()
-                ids, labels = ids.to(self.device), labels.to(self.device)
+                att = torch.tensor(np.array(attention_mask_list), dtype=torch.float).float()
+                labels = torch.tensor(np.array(labels_list), dtype=torch.float).float()
+                ids, att, labels = ids.to(self.device), att.to(self.device),labels.to(self.device)
 
                 # forward pass
-                outputs = self.model(ids, labels=labels)
+                self.logger.log_memory_info()
+                outputs = self.model(input_ids=ids, attention_mask=att, labels=labels)
+                self.logger.log_memory_info()
                 loss, logits = outputs[:2]
                 print(loss)
 
@@ -96,11 +107,10 @@ class ChunkCombinationsModel(Model):
         """
             Validate the model
         """
-        logging.info("Starting validation...")
-        print("starting validation...")
+        self.logger.log_model_info("start_validation")
         dev_true, dev_pred, cur_pearson = self.predict(val_data, self.model)
 
-        logging.info(f"Current dev pearson is {cur_pearson:.4f}, best pearson is {best_pearson:.4f}")
+        self.logger.log_model_info("finished_validation", cur_pearson, best_pearson)
 
         if cur_pearson > best_pearson:
             best_pearson = cur_pearson
@@ -113,14 +123,14 @@ class ChunkCombinationsModel(Model):
         """
             Predict the scores
         """
-        logging.info("Starting prediction...")
+        self.logger.log_model_info("start_prediction")
         model.eval()
         dev_true, dev_pred = [], []
 
         # iterate through the batches
         for _, batch in enumerate(data):
             with torch.no_grad():
-                combinations_list, labels_list = [], []
+                combinations_list, attention_mask_list, labels_list = [], [], []
                 labels = batch["overall"].values
 
                 # iterate through the rows in the batch
@@ -131,13 +141,16 @@ class ChunkCombinationsModel(Model):
                         labels_list.append(float(label))
 
                         combinations_list.append(torch.tensor(combination, dtype=torch.float))
+                        att_mask = MlUtils.create_attention_mask(combination)
+                        attention_mask_list.append(att_mask)
 
                 # convert the lists to tensors and move them to the device
                 ids, labels = torch.stack(combinations_list).long(), torch.tensor(labels_list, dtype=torch.float).float()
-                ids, labels = ids.to(self.device), labels.to(self.device)
+                att = torch.tensor(attention_mask_list, dtype=torch.float).float()
+                ids, att, labels = ids.to(self.device), att.to(self.device), labels.to(self.device)
 
                 # forward pass
-                outputs = model(ids, labels=labels)
+                outputs = model(input_ids=ids, attention_mask=att,labels=labels)
                 _, logits = outputs[:2]
 
                 # append the true and predicted values to the lists
@@ -146,7 +159,8 @@ class ChunkCombinationsModel(Model):
 
         # calculate the pearson correlation
         curr_pearson = np.corrcoef(dev_true, dev_pred)[0][1]
-        logging.info(f"Finished prediction with pearson corr: {curr_pearson:.4f}")
+
+        self.log_model_info("finished_prediction", curr_pearson)
         
         return dev_true, dev_pred, curr_pearson
 
