@@ -52,11 +52,14 @@ class Logger:
         """
             Log the batch info
         """
-        self.logger.info(f"batch {idx+1} of {total_batches}")
-        self.logger.info(f"loss: {loss:.2f}")
+        if idx % 10 == 0:
+            self.logger.info(f"batch {idx+1} of {total_batches}")
+            self.logger.info(f"loss: {loss:.2f}")
 
-        print(f"batch {idx+1} of {total_batches}")
-        print(f"loss: {loss:.2f}")
+            print(f"batch {idx+1} of {total_batches}")
+            print(f"loss: {loss:.2f}")
+
+            self.log_memory_info()
 
     def log_memory_info(self) -> None:
         """
@@ -64,3 +67,18 @@ class Logger:
         """
         self.logger.info(f"Memory used: {psutil.virtual_memory().percent}%")
         print(f"Memory used: {psutil.virtual_memory().percent}%")
+
+
+    def log_saving_model(self, save_path: str) -> None:
+        """
+            Log the saving model info
+        """
+        self.logger.info(f"Saving model to {save_path}")
+        print(f"Saving model to {save_path}")
+
+    def log_time_cost(self, start_time: float, end_time: float) -> None:
+        """
+            Log the time cost
+        """
+        self.logger.info(f"Time cost: {end_time - start_time:.2f} seconds")
+        print(f"Time cost: {end_time - start_time:.2f} seconds")
