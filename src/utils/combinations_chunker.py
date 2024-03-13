@@ -38,7 +38,7 @@ class Chunker:
         df["chunks2"] = df["text2"].apply(self._chunk)
         return df
 
-    def create_combinations(self, df: pd.DataFrame) -> pd.DataFrame:
+    def create_combinations(self, df: pd.DataFrame, max_combinations=10) -> pd.DataFrame:
         """
             Create combinations of chunks and add them to the dataframe
         """
@@ -51,12 +51,21 @@ class Chunker:
             chunks1 = row["chunks1"] # e.g. (2, 256)
             chunks2 = row["chunks2"] # e.g. (3, 256)
             
+            # create combinations of chunks
             for i, chunk1 in enumerate(chunks1):
                 for j, chunk2 in enumerate(chunks2):
                     if chunk1[-1] != self.sep_token_id:
                         chunk1 = np.concatenate((chunk1, sep_token_array))
 
                     combinations[(row_idx, i, j)] = np.concatenate((chunk1, chunk2))
+
+            # select a random sample of combinations
+            if len(combinations) > max_combinations:
+                keys = list(combinations.keys())
+                selected_indices = np.random.choice(len(keys), max_combinations, replace=False)
+                selected_keys = [keys[index] for index in selected_indices]
+                combinations = {key: combinations[key] for key in selected_keys}
+
             combined.append(combinations)
 
         df["combinations"] = combined
