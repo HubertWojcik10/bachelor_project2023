@@ -1,4 +1,6 @@
 from typing import List, Tuple
+import numpy as np
+from collections import defaultdict
 import pandas as pd
 
 class Chunker:
