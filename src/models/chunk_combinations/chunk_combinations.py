@@ -135,30 +135,32 @@ class ChunkCombinationsModel(Model):
         # iterate through the batches
         for _, batch in enumerate(data):
             with torch.no_grad():
-                combinations_list, attention_mask_list, labels_list = [], [], []
-                labels = batch["overall"].values
+                aggregated_logits, labels = [], batch["overall"].values
 
                 # iterate through the rows in the batch
                 for label, combinations in zip(labels, batch["combinations"]):
+                    logits_list = []
                     # iterate through the combinations in the row
                     for _, combination in combinations.items():
-                        labels_list.append(float(label))
-
-                        combinations_list.append(torch.tensor(combination, dtype=torch.float))
                         att_mask = MlUtils.create_attention_mask(combination)
-                        attention_mask_list.append(att_mask)
+
+                        # convert the lists to tensors and move them to the device
+                        ids = torch.tensor(combination, dtype=torch.long).unsqueeze(0).to(self.device)
+                        att = torch.tensor(att_mask, dtype=torch.float).unsqueeze(0).to(self.device)
+
+                        # get the output from the model and append the logits to the list
+                        output = self.model(input_ids=ids, attention_mask=att)
+                        logits_list.append(output.logits)
+                    
+                    aggregated_logits.append(torch.mean(torch.stack(logits_list), dim=0))
 
                 # convert the lists to tensors and move them to the device
-                ids, labels = torch.stack(combinations_list).long(), torch.tensor(labels_list, dtype=torch.float).float()
-                att = torch.tensor(np.array(attention_mask_list), dtype=torch.float).float()
-                ids, att, labels = ids.to(self.device), att.to(self.device), labels.to(self.device)
-
-                # forward pass
-                outputs = model(input_ids=ids, attention_mask=att,labels=labels)
+                labels_tensor = torch.tensor(labels, dtype=torch.float).to(self.device)
+                outputs = torch.stack(aggregated_logits).squeeze().to(self.device)
 
                 # append the true and predicted values to the lists
-                dev_true.extend(labels.cpu().detach().numpy())
-                dev_pred.extend(outputs.logits.cpu().detach().numpy().flatten())
+                dev_true.extend(labels_tensor.cpu().detach().numpy())
+                dev_pred.extend(outputs.cpu().detach().numpy().flatten())
 
         # calculate the pearson correlation
         curr_pearson = np.corrcoef(dev_true, dev_pred)[0][1]
@@ -175,8 +177,8 @@ class ChunkCombinationsModel(Model):
         train_data, test_data = self.get_data(self.params_dict["train_data_path"], self.params_dict["test_data_path"])
         
         if self.dev:
-            train_data = train_data[:16]
-            test_data = test_data[:16]
+            train_data = train_data[:15]
+            test_data = test_data[:15]
 
         if train:
             train_data = self.chunker.create_chunks(train_data)
