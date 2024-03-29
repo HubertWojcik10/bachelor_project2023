@@ -37,8 +37,8 @@ class TextSummarizer(Model):
 
             self.train(train_loader, val_loader, self.summarizer_save_path, "text_summarizer", self.curr_time)
         else:
-            model = XLMRobertaForSequenceClassification.from_pretrained(self.model_name, num_labels=1)
-            model.load_state_dict(torch.load(self.summarizer_save_path))
+            model = XLMRobertaForSequenceClassification.from_pretrained(self.params_dict["model"], num_labels=1)
+            model.load_state_dict(torch.load(self.params_dict["chunk_combinations_save_path"]))
             
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             model.to(device)

@@ -23,6 +23,7 @@ class Model:
         self.shuffle = params_dict["shuffle"]
         self.model_save_path = params_dict["model_save_path"]
         self.summarizer_save_path = params_dict["summarizer_save_path"]
+        self.train_on = params_dict["train_on"]
 
         self.tokenizer = XLMRobertaTokenizer.from_pretrained(self.model_name)
         self.model = XLMRobertaForSequenceClassification.from_pretrained(self.model_name, num_labels=1)
@@ -37,6 +38,10 @@ class Model:
             Manage the device to run the model on
         """
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        
+        if self.train_on == "cpu":
+            self.device = torch.device("cpu")        
+        
         self.model.to(self.device)
 
     def get_data(self, train_data_path: str, test_data_path: str, dev: bool = False) -> Tuple[pd.DataFrame, pd.DataFrame]:

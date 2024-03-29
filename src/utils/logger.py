@@ -82,3 +82,7 @@ class Logger:
         """
         self.logger.info(f"Time cost: {end_time - start_time:.2f} seconds")
         print(f"Time cost: {end_time - start_time:.2f} seconds")
+
+    def log_custom_info(self, msg) -> None:
+        self.logger.info(msg)
+        print(msg)
