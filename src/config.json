@@ -6,7 +6,7 @@
     "rounding_strategy": "round_up",
     "model": "xlm-roberta-base",
     "summarizer_model": "Falconsai/text_summarization",
-    "batch_size": 8,
+    "batch_size": 4,
     "epochs": 5,
     "learning_rate": 1e-5,
     "train_size": 0.8,
@@ -14,5 +14,6 @@
     "model_save_path": "../saved_models/baseline/best_baseline.pth",
     "summarizer_save_path": "../saved_models/text_summarizer/best_summarizer.pth",
     "chunk_combinations_save_path": "../saved_models/chunk_combinations/best_chunk_combinations.pth",
-    "log_dir": "../logs"
+    "log_dir": "../logs",
+    "train_on": "gpu"
 }

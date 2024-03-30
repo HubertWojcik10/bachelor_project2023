@@ -2,14 +2,16 @@ import torch
 import numpy as np
 from typing import List, Tuple, Dict
 import time
+from collections import defaultdict
+import pandas as pd
+from utils.ml_utils import MlUtils
+from transformers import XLMRobertaForSequenceClassification
 from sklearn.model_selection import train_test_split
 from utils.dev_utils import DevUtils
 from utils.logger import Logger
 from models.model import Model
 from utils.combinations_chunker import Chunker
-from collections import defaultdict
-import pandas as pd
-from utils.ml_utils import MlUtils
+
 
 
 class ChunkCombinationsModel(Model):
@@ -34,7 +36,7 @@ class ChunkCombinationsModel(Model):
 
         # select the columns and split to train and validation
         df = df[["combinations", "overall"]]
-        train_df, val_df = train_test_split(df, test_size=(1-self.train_size), random_state=42, shuffle=False)
+        train_df, val_df = train_test_split(df, test_size=(1-self.train_size), random_state=42, shuffle=True)
 
         # split the train and validation data into batches
         batch_num = np.ceil(len(train_df) / self.batch_size)
@@ -64,7 +66,7 @@ class ChunkCombinationsModel(Model):
                 aggregated_logits, labels = [], batch["overall"].values
 
                 # iterate through the rows in the batch
-                for combinations in batch["combinations"]:
+                for label, combinations in zip(labels, batch["combinations"]):
                     logits_list = []
 
                     # iterate through the combinations in the row
@@ -177,8 +179,9 @@ class ChunkCombinationsModel(Model):
         train_data, test_data = self.get_data(self.params_dict["train_data_path"], self.params_dict["test_data_path"])
         
         if self.dev:
-            train_data = train_data[:15]
-            test_data = test_data[:15]
+            #train_data = train_data[:15]
+            #test_data = test_data[:15]
+            pass
 
         if train:
             train_data = self.chunker.create_chunks(train_data)
@@ -187,4 +190,18 @@ class ChunkCombinationsModel(Model):
 
             self.train(train_batched_data, val_batched_data, self.params_dict["chunk_combinations_save_path"])
         else:
-            pass
+            test_data = self.chunker.create_chunks(test_data)
+            test_data = self.chunker.create_combinations(test_data)
+
+            test_data = test_data.sample(frac=1).reset_index(drop=True)
+
+            batch_num = np.ceil(len(test_data) / self.batch_size)
+            test_batched_data = np.array_split(test_data, batch_num)
+
+            model = XLMRobertaForSequenceClassification.from_pretrained(self.params_dict["model"], num_labels=1)
+            model.load_state_dict(torch.load(self.params_dict["chunk_combinations_save_path"]))
+            
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            model.to(device)
+
+            dev_true, dev_pred, cur_pearson = self.predict(test_batched_data, model)
