@@ -84,5 +84,18 @@ class Logger:
         print(f"Time cost: {end_time - start_time:.2f} seconds")
 
     def log_custom_info(self, msg) -> None:
+        """
+            Log the whatever information one wants
+        """
         self.logger.info(msg)
         print(msg)
+
+    def log_test_batch_info(self, idx: int, total_batches: int) -> None:
+        """
+            Log the test batch info
+        """
+        if idx % 10 == 0:
+            self.logger.info(f"batch {idx+1} of {total_batches}")
+            print(f"batch {idx+1} of {total_batches}")
+
+            self.log_memory_info()

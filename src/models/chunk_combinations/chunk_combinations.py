@@ -28,15 +28,16 @@ class ChunkCombinationsModel(Model):
         self.curr_time = curr_time
         self.model_name = "chunk_combinations"
         self.logger = Logger(log_dir)
+        self.random_seed = params_dict["random_seed"]
 
-    def split_data(self, df: pd.DataFrame) -> Tuple[List[pd.DataFrame], List[pd.DataFrame]]:
+    def split_train_data(self, df: pd.DataFrame) -> Tuple[List[pd.DataFrame], List[pd.DataFrame]]:
         """
-            Split the data into train and test
+            Split the train data into train and validation
         """
 
         # select the columns and split to train and validation
-        df = df[["combinations", "overall"]]
-        train_df, val_df = train_test_split(df, test_size=(1-self.train_size), random_state=42, shuffle=True)
+        df = df[["pair_id", "combinations", "overall"]]
+        train_df, val_df = train_test_split(df, test_size=(1-self.train_size), random_state=self.random_seed, shuffle=True)
 
         # split the train and validation data into batches
         batch_num = np.ceil(len(train_df) / self.batch_size)
@@ -44,6 +45,18 @@ class ChunkCombinationsModel(Model):
         val_batched_data = np.array_split(val_df, batch_num)
 
         return train_batched_data, val_batched_data
+    
+    def split_test_data(self, df: pd.DataFrame) -> List[pd.DataFrame]:
+        """
+            Split the test data into batches
+        """
+        df = df[["pair_id", "combinations", "overall"]]
+        df = df.sample(frac=1, random_state=self.random_seed).reset_index(drop=True)
+
+        batch_num = np.ceil(len(df) / self.batch_size)
+        test_batched_data = np.array_split(df, batch_num)
+
+        return test_batched_data
 
     
     def train(self, train_batched_data: List[pd.DataFrame], val_batched_data: List[pd.DataFrame], save_path: str) -> None:
@@ -64,9 +77,10 @@ class ChunkCombinationsModel(Model):
             # iterate through the batches
             for idx, batch in enumerate(train_batched_data):
                 aggregated_logits, labels = [], batch["overall"].values
+                pair_ids = batch["pair_id"].values
 
                 # iterate through the rows in the batch
-                for label, combinations in zip(labels, batch["combinations"]):
+                for label, combinations, pair_id in zip(labels, batch["combinations"], pair_ids):
                     logits_list = []
 
                     # iterate through the combinations in the row
@@ -83,7 +97,10 @@ class ChunkCombinationsModel(Model):
                         output = self.model(input_ids=ids, attention_mask=att)
                         logits_list.append(output.logits)
                         
+                    print(f"--\n{logits_list}")
                     aggregated_logits.append(torch.mean(torch.stack(logits_list), dim=0))
+                    print(torch.mean(torch.stack(logits_list), dim=0))
+                    print(f"label: {label}")
 
                 # convert the lists to tensors and move them to the device
                 labels_tensor = torch.tensor(labels, dtype=torch.float).to(self.device)
@@ -115,7 +132,7 @@ class ChunkCombinationsModel(Model):
             Validate the model
         """
         self.logger.log_model_info("start_validation")
-        _, _, cur_pearson = self.predict(val_data, self.model)
+        _, _, cur_pearson = self.predict(val_data, self.model, test=False)
 
         self.logger.log_model_info("finished_validation", cur_pearson, best_pearson)
 
@@ -126,21 +143,27 @@ class ChunkCombinationsModel(Model):
 
         self.logger.log_time_cost(start_time, time.time())
 
-    def predict(self, data, model) -> Tuple[List, List, float]:
+    def predict(self, data, model, test: bool = True) -> Tuple[List, List, float]:
         """
             Predict the scores
         """
         self.logger.log_model_info("start_prediction")
         model.eval()
         dev_true, dev_pred = [], []
+        df_reconstructed = pd.concat([pd.DataFrame(batch) for batch in data], ignore_index=True)
+        logits_chunks_for_df = []
+        logits_for_df = []
+        
 
         # iterate through the batches
-        for _, batch in enumerate(data):
+        for idx, batch in enumerate(data):
+            self.logger.log_test_batch_info(idx, len(data))
             with torch.no_grad():
                 aggregated_logits, labels = [], batch["overall"].values
+                pair_ids = batch["pair_id"].values
 
                 # iterate through the rows in the batch
-                for label, combinations in zip(labels, batch["combinations"]):
+                for label, combinations, pair_ids in zip(labels, batch["combinations"], pair_ids):
                     logits_list = []
                     # iterate through the combinations in the row
                     for _, combination in combinations.items():
@@ -154,7 +177,13 @@ class ChunkCombinationsModel(Model):
                         output = self.model(input_ids=ids, attention_mask=att)
                         logits_list.append(output.logits)
                     
-                    aggregated_logits.append(torch.mean(torch.stack(logits_list), dim=0))
+                    prediction = torch.mean(torch.stack(logits_list), dim=0)
+                    logits_for_df.append(prediction.item())
+                    aggregated_logits.append(prediction)
+
+                    logits_list_for_df = [l.tolist() for l in logits_list]
+                    logits_chunks_for_df.append(logits_list_for_df)
+
 
                 # convert the lists to tensors and move them to the device
                 labels_tensor = torch.tensor(labels, dtype=torch.float).to(self.device)
@@ -166,6 +195,10 @@ class ChunkCombinationsModel(Model):
 
         # calculate the pearson correlation
         curr_pearson = np.corrcoef(dev_true, dev_pred)[0][1]
+
+        # save the dataframe with the predictions
+        if test:
+            DevUtils.save_df_with_predictions(df_reconstructed, logits_chunks_for_df, logits_for_df, self.curr_time, self.model_name)
 
         self.logger.log_model_info("finished_prediction", curr_pearson)
         
@@ -179,24 +212,22 @@ class ChunkCombinationsModel(Model):
         train_data, test_data = self.get_data(self.params_dict["train_data_path"], self.params_dict["test_data_path"])
         
         if self.dev:
-            #train_data = train_data[:15]
-            #test_data = test_data[:15]
-            pass
+            train_data = train_data[:15]
+            test_data = test_data[:15]
+            print("Running in dev mode")
 
         if train:
             train_data = self.chunker.create_chunks(train_data)
             train_data = self.chunker.create_combinations(train_data)
-            train_batched_data, val_batched_data = self.split_data(train_data)
+            train_batched_data, val_batched_data = self.split_train_data(train_data)
 
             self.train(train_batched_data, val_batched_data, self.params_dict["chunk_combinations_save_path"])
         else:
+            test_data = test_data[:15]
             test_data = self.chunker.create_chunks(test_data)
             test_data = self.chunker.create_combinations(test_data)
 
-            test_data = test_data.sample(frac=1).reset_index(drop=True)
-
-            batch_num = np.ceil(len(test_data) / self.batch_size)
-            test_batched_data = np.array_split(test_data, batch_num)
+            test_batched_data = self.split_test_data(test_data)
 
             model = XLMRobertaForSequenceClassification.from_pretrained(self.params_dict["model"], num_labels=1)
             model.load_state_dict(torch.load(self.params_dict["chunk_combinations_save_path"]))

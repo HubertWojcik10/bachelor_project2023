@@ -4,6 +4,7 @@ import json
 import datetime
 import matplotlib.pyplot as plt
 import os
+from typing import List
 
 class DevUtils:
     @staticmethod
@@ -64,3 +65,15 @@ class DevUtils:
         save_path = f"../logs/{model_name}/{curr_time}/losses.png"
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         fig.savefig(save_path)
+
+    @staticmethod
+    def save_df_with_predictions(df_reconstructed: pd.DataFrame, logits_chunks: List, logits: List, curr_time: str, model_name: str) -> None:
+        """
+            Save the dataframe with the predictions
+        """
+        save_path = f"../logs/{model_name}/{curr_time}/pred_df.csv"
+        df_reconstructed["logits_chunks"] = logits_chunks
+        df_reconstructed["logits"] = logits
+
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        df_reconstructed.to_csv(save_path, index=False)
