@@ -1,7 +1,6 @@
 from transformers import XLMRobertaTokenizer, XLMRobertaModel
 import pandas as pd
 import numpy as np
-import sys
 from utils.chunker import Chunker
 import torch.nn as nn
 import torch
@@ -12,6 +11,7 @@ class XLMRoberta(nn.Module):
     def __init__(self, model_name: str):
         super(XLMRoberta, self).__init__()
         self.model = XLMRobertaModel.from_pretrained(model_name)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         torch.manual_seed(42)
         
         
