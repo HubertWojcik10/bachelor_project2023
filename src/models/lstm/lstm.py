@@ -6,7 +6,6 @@ import torch
 from torch import Tensor
 from typing import List, Tuple, Dict
 from torch.utils.data import TensorDataset, DataLoader, random_split
-import sys
 from utils.chunker import Chunker
 from models.lstm.xlm_roberta import XLMRoberta
 
@@ -150,6 +149,7 @@ class LSTMOnXLMRoberta(nn.Module):
                 print(f"Batch loss: {batch_loss}")
                 batch_pearson = self.pearson_correlation(label_batch, outputs)
                 print(f"Batch pearson: {batch_pearson}")
+                print("/n")
         
             eval_pearson = self.evaluate_model(input_ids_val, labels_val)
             print(f"Eval pearson: {eval_pearson}")
