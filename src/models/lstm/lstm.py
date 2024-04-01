@@ -40,7 +40,7 @@ class LSTMOnXLMRoberta(nn.Module):
 
     def get_data(self, path):
         df = pd.read_csv(path)
-        #df = df.head(20)
+        df = df.head(100)
         return df
     
     def chunk_data(self, df):
@@ -107,6 +107,7 @@ class LSTMOnXLMRoberta(nn.Module):
                     output_val.append(output)
                     
         pearson = self.pearson_correlation(labels_val, output_val)
+        print(f"Eval pearson: {pearson}")
         return pearson
     
     def train_model(self, input_ids_train, labels_train, input_ids_val, labels_val, batch_size = 4):
@@ -152,7 +153,7 @@ class LSTMOnXLMRoberta(nn.Module):
                 print("/n")
         
             eval_pearson = self.evaluate_model(input_ids_val, labels_val)
-            print(f"Eval pearson: {eval_pearson}")
+            
             if eval_pearson > best_pearson:
                 best_pearson = eval_pearson
                 print("Saving the model...")
@@ -161,18 +162,18 @@ class LSTMOnXLMRoberta(nn.Module):
     def run(self, train: bool = True):
         torch.autograd.set_detect_anomaly(True)
         self._manage_device()
-        self.train_path, self.test_path = self.params_dict["train_data_path"], self.params_dict["test_data_path"]
-        train_df= self.get_data(self.train_path)
-        train_df = train_df.sample(frac=1).reset_index(drop=True) #shuffle 
-        train_df, val_df = train_df[:int(len(train_df) * 0.8)], train_df[int(len(train_df) * 0.8):].reset_index(drop=True)
-        input_ids_train, labels_train = self.chunk_data(train_df)
-        input_ids_val, labels_val = self.chunk_data(val_df)
-
-        test_df = self.get_data(self.test_path)
-        input_ids_test, labels_test = self.chunk_data(test_df)
-
-        self.parameter_to_optimize()
         if train:
+            self.train_path = self.params_dict["train_data_path"]
+            train_df= self.get_data(self.train_path)
+            train_df = train_df.sample(frac=1).reset_index(drop=True) #shuffle 
+            train_df, val_df = train_df[:int(len(train_df) * 0.8)], train_df[int(len(train_df) * 0.8):].reset_index(drop=True)
+            input_ids_train, labels_train = self.chunk_data(train_df)
+            input_ids_val, labels_val = self.chunk_data(val_df)
+            self.parameter_to_optimize()
             self.train_model(input_ids_train, labels_train, input_ids_val, labels_val)
         else:
-            self.evaluate_model(input_ids_test, labels_test)
+            self.test_path = self.params_dict["test_data_path"]
+            test_df = self.get_data(self.test_path)
+            input_ids_test, labels_test = self.chunk_data(test_df)
+            pearson =self.evaluate_model(input_ids_test, labels_test)
+            print(pearson)
