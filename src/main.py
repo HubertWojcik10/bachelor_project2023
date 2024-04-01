@@ -7,6 +7,7 @@ from utils.dev_utils import DevUtils
 import logging
 import os
 import datetime
+import torch
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run models with optional training.")
@@ -50,6 +51,7 @@ if __name__ == "__main__":
         if args.train:  
             lstmonxlmroberta.run(train = True)
         else:
+            lstmonxlmroberta.load_state_dict(torch.load(params["lstm_save_path"]))
             lstmonxlmroberta.run(train = False)
     elif args.model == 4:
         chunk_combinations_model = ChunkCombinationsModel(params_dict=params, dev=dev, curr_time=curr_time, log_dir=log_dir)
