@@ -2,8 +2,7 @@ from transformers import XLMRobertaTokenizer, XLMRobertaModel
 import pandas as pd
 import numpy as np
 import sys
-sys.path.append('/Users/germa/thesis/bachelor_project2023/src/utils')
-from chunker import Chunker
+from utils.chunker import Chunker
 import torch.nn as nn
 import torch
 from torch import Tensor
