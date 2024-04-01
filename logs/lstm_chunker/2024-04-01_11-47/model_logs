@@ -1,0 +1,6 @@
+01-04-2024 11:47:06 root:INFO:Params:
+{'train_data_path': '../data/train/train.csv', 'test_data_path': '../data/test/merged_test_data.csv', 'summary_train_data_path': '../data/train/train_sum.csv', 'summary_test_data_path': '../data/test/merged_test_data.csv', 'rounding_strategy': 'round_up', 'model': 'xlm-roberta-base', 'summarizer_model': 'Falconsai/text_summarization', 'batch_size': 8, 'epochs': 5, 'learning_rate': 1e-05, 'train_size': 0.8, 'shuffle': True, 'model_save_path': '../saved_models/baseline/best_baseline.pth', 'summarizer_save_path': '../saved_models/text_summarizer/best_summarizer.pth', 'lstm_save_path': '../saved_models/xlmroberta_on_lstm/best_lstm.pth', 'chunk_combinations_save_path': '../saved_models/chunk_combinations/best_chunk_combinations.pth', 'log_dir': '../logs'}
+01-04-2024 11:47:06 urllib3.connectionpool:DEBUG:Starting new HTTPS connection (1): huggingface.co:443
+01-04-2024 11:47:07 urllib3.connectionpool:DEBUG:https://huggingface.co:443 "HEAD /xlm-roberta-base/resolve/main/config.json HTTP/1.1" 200 0
+01-04-2024 11:47:07 urllib3.connectionpool:DEBUG:https://huggingface.co:443 "HEAD /xlm-roberta-base/resolve/main/config.json HTTP/1.1" 200 0
+01-04-2024 11:47:09 urllib3.connectionpool:DEBUG:https://huggingface.co:443 "HEAD /xlm-roberta-base/resolve/main/tokenizer_config.json HTTP/1.1" 200 0

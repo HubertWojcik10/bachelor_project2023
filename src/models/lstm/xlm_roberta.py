@@ -28,6 +28,8 @@ class XLMRoberta(nn.Module):
                     chunk_ids = torch.tensor(chunk).unsqueeze(0)
                     attention_mask = [1 if i != 0 else 0 for i in chunk_ids.tolist()]
                     attention_mask = torch.tensor(attention_mask).unsqueeze(0)
+                    chunk_ids = chunk_ids.to(self.device)
+                    attention_mask = attention_mask.to(self.device)
                     outputs= self.model(chunk_ids, attention_mask)
                     last_hidden_state = outputs.last_hidden_state.mean(dim=1).squeeze(0)
                     text_emb.append(last_hidden_state)
@@ -35,4 +37,3 @@ class XLMRoberta(nn.Module):
                 row_emb.append(text_emb)
             output.append(row_emb)
         return output
-    

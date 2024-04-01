@@ -73,14 +73,15 @@ class LSTMOnXLMRoberta(nn.Module):
         max_size = max(tensor.size(0) for tensor in tensors)
         padded_tensors = []
         for tensor in tensors:
+            tensor.to(self.device)
             if tensor.size(0) < max_size:
-                padding = torch.zeros(max_size - tensor.size(0), tensor.size(1))
+                padding = torch.zeros(max_size - tensor.size(0), tensor.size(1)).to(self.device) 
                 padded_tensor = torch.cat((tensor, padding), dim=0)
                 padded_tensors.append(padded_tensor)
             else:
                 padded_tensors.append(tensor)
         return torch.stack(padded_tensors)
-    
+
     def pearson_correlation(self, labels_val, output_val):
         output_val= np.array([t.item() for t in output_val])
         return np.corrcoef(labels_val, output_val)[0][1]
@@ -129,13 +130,17 @@ class LSTMOnXLMRoberta(nn.Module):
                 for row, label in zip(input_batch, label_batch):
                     index1, index2 = len(row[0]), len(row[1])
                     row_padded = self.pad_to_same_size(row) 
+                    row_padded = row_padded.to(self.device)
                     lstm_out, _ = self.lstm(row_padded)
                     lstm_out_last1 = lstm_out[0, index1 - 1, :]
                     lstm_out_last2 = lstm_out[1, index2 - 1, :]
                     nn = torch.cat((lstm_out_last1, lstm_out_last2), 0)
+                    nn= nn.to(self.device)
                     output = self.fc(nn)
                     outputs.append(output)
-                    loss = self.loss_function(output, torch.tensor(label, dtype=torch.float32).view(1))
+                    label=torch.tensor(label, dtype=torch.float32).view(1)
+                    label = label.to(self.device)
+                    loss = self.loss_function(output,label)
                     batch_loss = batch_loss + loss
 
                 batch_loss = batch_loss/batch_size 
