@@ -1,6 +1,7 @@
 from models.baseline.baseline import Baseline
 from models.text_summarizer.text_summarizer import TextSummarizer
 from models.chunk_combinations.chunk_combinations import ChunkCombinationsModel
+from models.lstm.lstm import LSTMOnXLMRoberta
 import argparse
 from utils.dev_utils import DevUtils
 import logging
@@ -45,7 +46,11 @@ if __name__ == "__main__":
         else:
             text_summarizer.run(train=False)
     elif args.model == 3:
-        pass
+        lstmonxlmroberta = LSTMOnXLMRoberta(params_dict=params, input_size=768, lstm_hidden_size= 384,num_lstm_layers= 1)
+        if args.train:  
+            lstmonxlmroberta.run(train = True)
+        else:
+            lstmonxlmroberta.run(train = False)
     elif args.model == 4:
         chunk_combinations_model = ChunkCombinationsModel(params_dict=params, dev=dev, curr_time=curr_time, log_dir=log_dir)
         if args.train:
