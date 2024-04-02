@@ -111,10 +111,9 @@ class LSTMOnXLMRoberta(nn.Module):
             Train the model
         """
         best_pearson = -1
-        self.train()
         for epoch in range(5):
+            self.train()
             print(f"Epoch: {epoch}")
-
             for i in range(0, len(input_ids_train), batch_size):
                 print(f"Batch: {int(i/batch_size)}/{int(len(input_ids_train)/batch_size)}")
                 input_batch_data = input_ids_train[i:i + batch_size]
