@@ -26,7 +26,7 @@ class LSTMOnXLMRoberta(nn.Module):
 
         parameters_to_optimize = list(self.fc.parameters()) + list(self.lstm.parameters()) + list(self.xlmroberta_model.parameters())
 
-        self.optimizer = torch.optim.AdamW(parameters_to_optimize, lr=1e-2)
+        self.optimizer = torch.optim.AdamW(parameters_to_optimize, lr=1e-4)
         self.loss_function = nn.MSELoss()
         torch.manual_seed(42)
 
