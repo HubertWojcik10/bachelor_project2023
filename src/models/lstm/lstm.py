@@ -8,7 +8,7 @@ from typing import List, Tuple, Dict
 from torch.utils.data import TensorDataset, DataLoader, random_split
 from utils.chunker import Chunker
 from models.lstm.xlm_roberta import XLMRoberta
-
+import logging
 
 class LSTMOnXLMRoberta(nn.Module):
     def __init__(self, params_dict:  Dict[str, any], input_size, lstm_hidden_size, num_lstm_layers, model_name = 'xlm-roberta-base', train_size = 0.8, batch_size = 32, shuffle = True):
@@ -40,10 +40,11 @@ class LSTMOnXLMRoberta(nn.Module):
 
     def get_data(self, path):
         df = pd.read_csv(path)
-        #df = df.head(50)
+        df = df.head(300)
         return df
     
     def chunk_data(self, df):
+        logging.info("Chunking data...")
         texts1, texts2, labels = df["text1"], df["text2"], df["overall"]
         input_ids = []
         for i in range(len(texts1)):
@@ -65,6 +66,7 @@ class LSTMOnXLMRoberta(nn.Module):
         """
             Get the embeddings from the XLM-Roberta model
         """
+        logging.info("Getting embeddings...")
         outputs = self.xlmroberta_model.run(input_ids)
         return outputs
 
@@ -82,12 +84,17 @@ class LSTMOnXLMRoberta(nn.Module):
         return torch.stack(padded_tensors)
 
     def pearson_correlation(self, labels_val, output_val):
+        """get the pearson correlation between the labels and the output of the model"""
+        labels_val = np.array([t for t in labels_val])
         output_val= np.array([t.item() for t in output_val])
+        logging.info(f"labels_val: {labels_val}")
+        logging.info(f"output_val: {output_val}")
         return np.corrcoef(labels_val, output_val)[0][1]
     
     def predict(self, input_ids_val, batch_size = 4):
         """
             Evaluate the model """ 
+        logging.info("Evaluating the model...")
         self.eval()
         output_val = []
         with torch.no_grad():
@@ -106,16 +113,16 @@ class LSTMOnXLMRoberta(nn.Module):
 
         return output_val   
 
-    def train_model(self, input_ids_train, labels_train, input_ids_val, labels_val, batch_size = 4):
+    def train_model(self, input_ids_train, labels_train, input_ids_val, labels_val, batch_size = 4, epochs = 5):
         """
             Train the model
         """
         best_pearson = -1
-        for epoch in range(5):
+        for epoch in range(epochs):
             self.train()
-            print(f"Epoch: {epoch}")
+            logging.info(f"------------------------- Epoch: {epoch} of {epochs}-------------------------")
             for i in range(0, len(input_ids_train), batch_size):
-                print(f"Batch: {int(i/batch_size)}/{int(len(input_ids_train)/batch_size)}")
+                logging.info(f"---- Batch: {int(i/batch_size)} of {int(len(input_ids_train)/batch_size)}----")
                 input_batch_data = input_ids_train[i:i + batch_size]
                 input_batch = self.get_embeddings(input_batch_data)
                 label_batch = labels_train[i:i + batch_size]
@@ -142,18 +149,19 @@ class LSTMOnXLMRoberta(nn.Module):
                 batch_loss.backward()  # Backpropagation 
                 torch.nn.utils.clip_grad_norm_(self.parameters(), 1.0)
                 self.optimizer.step()  # Update weights
-                print(f"Batch loss: {batch_loss}")
+                logging.info(f"Batch loss: {round(batch_loss.item(), 2)}")
                 #print(max(outputs))
                 batch_pearson = self.pearson_correlation(label_batch, outputs)
-                print(f"Batch pearson: {batch_pearson}")
+                logging.info(f"Batch pearson: {round(batch_pearson.item(), 2)}")
 
             predictions = self.predict(input_ids_val)
             #print(max(predictions))
             eval_pearson = self.pearson_correlation(labels_val, predictions)
-            
+
+            logging.info(f"Current pearson: {round(eval_pearson.item(), 2)}, Best pearson: {round(best_pearson.item(), 2)}")
             if eval_pearson > best_pearson:
                 best_pearson = eval_pearson
-                print("Saving the model...")
+                logging.info("Saving the last model...")
                 torch.save(self.state_dict(), self.params_dict["lstm_save_path"])
 
 
@@ -161,6 +169,7 @@ class LSTMOnXLMRoberta(nn.Module):
         torch.autograd.set_detect_anomaly(True)
         self._manage_device()
         if train:
+            logging.info("Training the model...")
             self.train_path = self.params_dict["train_data_path"]
             train_df= self.get_data(self.train_path)
             train_df = train_df.sample(frac=1).reset_index(drop=True) #shuffle 
@@ -170,10 +179,11 @@ class LSTMOnXLMRoberta(nn.Module):
             self.parameter_to_optimize()
             self.train_model(input_ids_train, labels_train, input_ids_val, labels_val)
         else:
+            logging.info("Testing the model...")
             self.test_path = self.params_dict["test_data_path"]
             test_df = self.get_data(self.test_path)
             input_ids_test, labels_test = self.chunk_data(test_df)
             predictions =self.predict(input_ids_test)
             #print(predictions)
             pearson = self.pearson_correlation(labels_test, predictions)
-            print(pearson)
+            logging.info(f"Pearson correlation for test data: {round(pearson.item(), 2)}")
