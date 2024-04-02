@@ -26,7 +26,7 @@ class LSTMOnXLMRoberta(nn.Module):
 
         parameters_to_optimize = list(self.fc.parameters()) + list(self.lstm.parameters()) + list(self.xlmroberta_model.parameters())
 
-        self.optimizer = torch.optim.AdamW(parameters_to_optimize, lr=1e-5)
+        self.optimizer = torch.optim.AdamW(parameters_to_optimize, lr=1e-2)
         self.loss_function = nn.MSELoss()
         torch.manual_seed(42)
 
@@ -40,7 +40,7 @@ class LSTMOnXLMRoberta(nn.Module):
 
     def get_data(self, path):
         df = pd.read_csv(path)
-        df = df.head(100)
+        #df = df.head(50)
         return df
     
     def chunk_data(self, df):
@@ -85,7 +85,7 @@ class LSTMOnXLMRoberta(nn.Module):
         output_val= np.array([t.item() for t in output_val])
         return np.corrcoef(labels_val, output_val)[0][1]
     
-    def evaluate_model(self, input_ids_val, labels_val, batch_size = 4):
+    def predict(self, input_ids_val, batch_size = 4):
         """
             Evaluate the model """ 
         self.eval()
@@ -94,9 +94,7 @@ class LSTMOnXLMRoberta(nn.Module):
             for i in range(0, len(input_ids_val), batch_size):
                 input_batch_data = input_ids_val[i:i + batch_size]
                 input_batch = self.get_embeddings(input_batch_data)
-                label_batch = labels_val[i:i + batch_size]
-
-                for row, label in zip(input_batch, label_batch):
+                for row in input_batch:
                     index1, index2 = len(row[0]), len(row[1])
                     row_padded = self.pad_to_same_size(row) 
                     lstm_out, _ = self.lstm(row_padded)
@@ -105,11 +103,9 @@ class LSTMOnXLMRoberta(nn.Module):
                     nn = torch.cat((lstm_out_last1, lstm_out_last2), 0)
                     output = self.fc(nn)
                     output_val.append(output)
-                    
-        pearson = self.pearson_correlation(labels_val, output_val)
-        print(f"Eval pearson: {pearson}")
-        return pearson
-    
+
+        return output_val   
+
     def train_model(self, input_ids_train, labels_train, input_ids_val, labels_val, batch_size = 4):
         """
             Train the model
@@ -148,16 +144,19 @@ class LSTMOnXLMRoberta(nn.Module):
                 torch.nn.utils.clip_grad_norm_(self.parameters(), 1.0)
                 self.optimizer.step()  # Update weights
                 print(f"Batch loss: {batch_loss}")
+                #print(max(outputs))
                 batch_pearson = self.pearson_correlation(label_batch, outputs)
                 print(f"Batch pearson: {batch_pearson}")
-                print("/n")
-        
-            eval_pearson = self.evaluate_model(input_ids_val, labels_val)
+
+            predictions = self.predict(input_ids_val)
+            #print(max(predictions))
+            eval_pearson = self.pearson_correlation(labels_val, predictions)
             
             if eval_pearson > best_pearson:
                 best_pearson = eval_pearson
                 print("Saving the model...")
                 torch.save(self.state_dict(), self.params_dict["lstm_save_path"])
+
 
     def run(self, train: bool = True):
         torch.autograd.set_detect_anomaly(True)
@@ -175,5 +174,7 @@ class LSTMOnXLMRoberta(nn.Module):
             self.test_path = self.params_dict["test_data_path"]
             test_df = self.get_data(self.test_path)
             input_ids_test, labels_test = self.chunk_data(test_df)
-            pearson =self.evaluate_model(input_ids_test, labels_test)
+            predictions =self.predict(input_ids_test)
+            #print(predictions)
+            pearson = self.pearson_correlation(labels_test, predictions)
             print(pearson)
