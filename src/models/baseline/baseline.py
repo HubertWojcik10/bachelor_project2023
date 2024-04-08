@@ -59,7 +59,7 @@ class Baseline(Model):
             test_score = torch.tensor(test_data["overall"]).float()
 
             test_loader = DataLoader(TensorDataset(test_input_ids, test_attention_mask, test_score), batch_size=self.batch_size, shuffle=self.shuffle, num_workers=4)
-            dev_true, dev_pred, cur_pearson = self.predict(test_loader, model)
+            dev_true, dev_pred, cur_pearson = self.predict(test_loader, model, self.curr_time, test=True)
 
             print(f"Test Pearson: {cur_pearson}")
 

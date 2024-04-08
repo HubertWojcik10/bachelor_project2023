@@ -77,3 +77,13 @@ class DevUtils:
 
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         df_reconstructed.to_csv(save_path, index=False)
+
+    @staticmethod
+    def save_true_pred_csv(dev_true: List, dev_pred: List, curr_time: str, model_name: str) -> None:
+        """
+            Save the true and predicted values to a csv file
+        """
+        save_path = f"../logs/{model_name}/{curr_time}/true_pred.csv"
+        df = pd.DataFrame({"true": dev_true, "pred": dev_pred})
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        df.to_csv(save_path, index=False)

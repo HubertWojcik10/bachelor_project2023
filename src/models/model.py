@@ -24,6 +24,7 @@ class Model:
         self.model_save_path = params_dict["model_save_path"]
         self.summarizer_save_path = params_dict["summarizer_save_path"]
         self.train_on = params_dict["train_on"]
+        self.seed = params_dict["random_seed"]
 
         self.tokenizer = XLMRobertaTokenizer.from_pretrained(self.model_name)
         self.model = XLMRobertaForSequenceClassification.from_pretrained(self.model_name, num_labels=1)
@@ -103,7 +104,7 @@ class Model:
 
         return train_loader, val_loader
 
-    def predict(self, loader: DataLoader, model) -> List:
+    def predict(self, loader: DataLoader, model, curr_time: str = "", model_name: str = "baseline", test: bool = False) -> List:
         """
             Predict the scores
         """
@@ -122,6 +123,10 @@ class Model:
 
         cur_pearson = np.corrcoef(dev_true, dev_pred)[0][1]
         logging.info(f"Finished prediction with pearson corr: {cur_pearson:.4f}")
+
+        if test: 
+            DevUtils.save_true_pred_csv(dev_true, dev_pred, curr_time, model_name)
+
         return dev_true, dev_pred, cur_pearson
 
     def train(self, train_loader: DataLoader, val_loader: DataLoader, save_path: str, model_name: str, curr_time: str) -> List:
@@ -172,7 +177,7 @@ class Model:
             if cur_pearson > best_pearson:
                 best_pearson = cur_pearson
                 print("Saving the model...")
-                torch.save(self.model.state_dict(), save_path)
+                torch.save(self.model.state_dict(), f"{save_path}_{self.batch_size}b_{self.seed}s")
 
             logging.info(f"Time costed : {round(time.time() - start_time, 3)}s")
             print("Time costed : {}s \n".format(round(time.time() - start_time, 3)))
