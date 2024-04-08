@@ -48,7 +48,7 @@ class Baseline(Model):
             self.train(train_loader, val_loader, self.model_save_path, "baseline", self.curr_time)
         else:
             model = XLMRobertaForSequenceClassification.from_pretrained(self.model_name, num_labels=1)
-            model.load_state_dict(torch.load(self.model_save_path))
+            model.load_state_dict(torch.load(f"{self.model_save_path}_{self.batch_size}b_{self.seed}s"))
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             model.to(device)
 
