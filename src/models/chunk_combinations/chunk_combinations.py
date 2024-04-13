@@ -28,7 +28,8 @@ class ChunkCombinationsModel(Model):
         self.curr_time = curr_time
         self.model_name = "chunk_combinations"
         self.logger = Logger(log_dir)
-        self.random_seed = params_dict["random_seed"]
+        #self.random_seed = params_dict["random_seed"]
+        torch.manual_seed(self.seed)
 
     def split_train_data(self, df: pd.DataFrame) -> Tuple[List[pd.DataFrame], List[pd.DataFrame]]:
         """
@@ -37,7 +38,7 @@ class ChunkCombinationsModel(Model):
 
         # select the columns and split to train and validation
         df = df[["pair_id", "combinations", "overall"]]
-        train_df, val_df = train_test_split(df, test_size=(1-self.train_size), random_state=self.random_seed, shuffle=True)
+        train_df, val_df = train_test_split(df, test_size=(1-self.train_size), random_state=self.seed, shuffle=True)
 
         # split the train and validation data into batches
         batch_num = np.ceil(len(train_df) / self.batch_size)
@@ -51,7 +52,7 @@ class ChunkCombinationsModel(Model):
             Split the test data into batches
         """
         df = df[["pair_id", "combinations", "overall"]]
-        df = df.sample(frac=1, random_state=self.random_seed).reset_index(drop=True)
+        df = df.sample(frac=1, random_state=self.seed).reset_index(drop=True)
 
         batch_num = np.ceil(len(df) / self.batch_size)
         test_batched_data = np.array_split(df, batch_num)
@@ -174,7 +175,7 @@ class ChunkCombinationsModel(Model):
                         att = torch.tensor(att_mask, dtype=torch.float).unsqueeze(0).to(self.device)
 
                         # get the output from the model and append the logits to the list
-                        output = self.model(input_ids=ids, attention_mask=att)
+                        output = model(input_ids=ids, attention_mask=att)
                         logits_list.append(output.logits)
                     
                     prediction = torch.mean(torch.stack(logits_list), dim=0)
@@ -221,16 +222,18 @@ class ChunkCombinationsModel(Model):
             train_data = self.chunker.create_combinations(train_data)
             train_batched_data, val_batched_data = self.split_train_data(train_data)
 
-            self.train(train_batched_data, val_batched_data, self.params_dict["chunk_combinations_save_path"])
+            save_path = f"{self.params_dict["chunk_combinations_save_path"][:-4]}_{self.batch_size}b_{self.seed}s"
+            self.train(train_batched_data, val_batched_data, save_path)
         else:
-            test_data = test_data[:15]
             test_data = self.chunker.create_chunks(test_data)
             test_data = self.chunker.create_combinations(test_data)
 
             test_batched_data = self.split_test_data(test_data)
 
             model = XLMRobertaForSequenceClassification.from_pretrained(self.params_dict["model"], num_labels=1)
-            model.load_state_dict(torch.load(self.params_dict["chunk_combinations_save_path"]))
+            model_save_path = f"{self.params_dict["chunk_combinations_save_path"][:-4]}_{self.batch_size}b_{self.seed}s.pth"
+            print(model_save_path)
+            model.load_state_dict(torch.load(model_save_path))
             
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             model.to(device)

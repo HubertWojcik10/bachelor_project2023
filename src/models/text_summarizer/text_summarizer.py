@@ -4,13 +4,15 @@ from typing import Tuple
 from transformers import pipeline
 from torch import Tensor
 import torch
+from transformers import XLMRobertaForSequenceClassification
 
 class TextSummarizer(Model):
-    def __init__(self, params_dict, curr_time: str):
+    def __init__(self, params_dict, dev, curr_time: str):
         super().__init__(params_dict)
         self.params_dict = params_dict
         self.summarizer = pipeline("summarization", model=params_dict["summarizer_model"])
         self.curr_time = curr_time
+        self.dev = dev
 
     def _add_pad_token_to_text(self, text: str, max_length: int=254):
         return text + " <pad>" * (max_length - len(text.split()))
@@ -27,18 +29,19 @@ class TextSummarizer(Model):
         """
             Run the model
         """
+        train_data, test_data = self.get_data(self.params_dict["summary_train_data_path"], self.params_dict["summary_test_data_path"])
         if train:
-            train_data, test_data = self.get_data(self.params_dict["summary_train_data_path"], self.params_dict["summary_test_data_path"])
-
             input_ids, attention_mask = self.tokenize_texts(train_data, col1="summary1", col2="summary2")
             score = torch.tensor(self.train_data["overall"]).float()
 
             train_loader, val_loader = self.split_data(input_ids, attention_mask, score)
 
-            self.train(train_loader, val_loader, self.summarizer_save_path, "text_summarizer", self.curr_time)
+            save_path = f"{self.summarizer_save_path}_{self.batch_size}b_{self.seed}s.pth"
+            self.train(train_loader, val_loader, save_path, "text_summarizer", self.curr_time)
         else:
             model = XLMRobertaForSequenceClassification.from_pretrained(self.params_dict["model"], num_labels=1)
-            model.load_state_dict(torch.load(self.params_dict["chunk_combinations_save_path"]))
+            save_path = f"{self.summarizer_save_path}_{self.batch_size}b_{self.seed}s.pth"
+            model.load_state_dict(torch.load(save_path))
             
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             model.to(device)

@@ -32,7 +32,7 @@ class Model:
         
         self.train_data, self.test_data = self.get_data(params_dict["train_data_path"], params_dict["test_data_path"])
         self._manage_device()
-        torch.manual_seed(42)
+        torch.manual_seed(self.seed)
 
     def _manage_device(self) -> None:
         """
