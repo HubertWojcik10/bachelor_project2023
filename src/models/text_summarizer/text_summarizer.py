@@ -47,7 +47,7 @@ class TextSummarizer(Model):
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             model.to(device)
 
-            test_data = self.summarize(test_data)
+            #test_data = self.summarize(test_data)
             test_input_ids, test_attention_mask = self.tokenize_texts(test_data, col1="summary1", col2="summary2")
             test_score = torch.tensor(test_data["overall"]).float()
 
