@@ -11,9 +11,10 @@ import numpy as np
 import time
 from collections import defaultdict
 import logging
+from utils.logger import Logger
 
 class Model:
-    def __init__(self, params_dict: dict):
+    def __init__(self, params_dict: dict, log_dir: str):
         self.rounding_strategy = params_dict["rounding_strategy"]
         self.model_name = params_dict["model"]
         self.batch_size = params_dict["batch_size"]
@@ -26,6 +27,8 @@ class Model:
         self.train_on = params_dict["train_on"]
         self.seed = params_dict["random_seed"]
 
+        self.logger = Logger(log_dir)
+
         self.tokenizer = XLMRobertaTokenizer.from_pretrained(self.model_name)
         self.model = XLMRobertaForSequenceClassification.from_pretrained(self.model_name, num_labels=1)
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.learning_rate)
@@ -33,6 +36,7 @@ class Model:
         self.train_data, self.test_data = self.get_data(params_dict["train_data_path"], params_dict["test_data_path"])
         self._manage_device()
         torch.manual_seed(self.seed)
+
 
     def _manage_device(self) -> None:
         """
@@ -52,9 +56,9 @@ class Model:
         """
 
         if dev:
-            logging.info("Running in dev (smaller dataset) mode...")
+            self.logger.log_custom_info("Running in development mode...")
         else:
-            logging.info("Running in production (full dataset) mode...")
+            self.logger.log_custom_info("Running in production mode...")
 
         train_data = pd.read_csv(train_data_path)
         test_data = pd.read_csv(test_data_path)
@@ -70,7 +74,7 @@ class Model:
             Tokenize the input texts and return the input_ids and attention_mask
         """
 
-        logging.info("Tokenizing the input texts...")
+        self.logger.log_custom_info("Starting tokenization...")
 
         texts1, texts2 = df[col1], df[col2]
         input_ids, attention_mask = [], []
@@ -90,7 +94,7 @@ class Model:
             Split the data into training and validation sets using the DataLoader
         """
 
-        logging.info("Splitting the data into training and validation sets...")
+        self.logger.log_custom_info("Splitting data into training and validation sets...")
 
         tensor_dataset = TensorDataset(input_ids, attention_mask, labels)
         
@@ -108,11 +112,12 @@ class Model:
         """
             Predict the scores
         """
-        logging.info("Starting prediction...")
+        self.logger.log_model_info("start_prediction")
         model.eval()
         dev_true, dev_pred = [], []
 
         for idx, (ids, att, val) in enumerate(loader):
+            self.logger.log_test_batch_info(idx, len(loader))
             ids, att, val = ids.to(self.device), att.to(self.device), val.to(self.device)
             with torch.no_grad():
                 output = model(input_ids=ids, attention_mask=att)
@@ -122,7 +127,7 @@ class Model:
                 dev_pred.extend(logits.cpu().flatten().numpy().tolist())
 
         cur_pearson = np.corrcoef(dev_true, dev_pred)[0][1]
-        logging.info(f"Finished prediction with pearson corr: {cur_pearson:.4f}")
+        self.logger.log_model_info("finished_prediction", cur_pearson)
 
         if test: 
             DevUtils.save_true_pred_csv(dev_true, dev_pred, curr_time, model_name)
@@ -134,7 +139,7 @@ class Model:
             Train the model
         """
 
-        logging.info("Starting training...")
+        self.logger.log_model_info("start_train")
 
         best_pearson = -1.0
         total_loss = 0
@@ -143,8 +148,7 @@ class Model:
 
         for epoch in range(self.epochs):
             start_time = time.time()
-            logging.info(f"{'-'*25} Epoch {epoch+1} of {self.epochs} {'-'*25}")
-            print(f"\n{'-'*25} Epoch {epoch+1} of {self.epochs} {'-'*25}")
+            self.logger.log_epoch_info(epoch, self.epochs)
 
             for idx, (ids, att, val) in enumerate(train_loader):
                 ids, att, val = ids.to(self.device), att.to(self.device), val.to(self.device)
@@ -161,27 +165,18 @@ class Model:
 
                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
 
-                if idx % 5 == 0:
-                    logging.info(f"batch {idx+1} of {len(train_loader)}")
-                    logging.info(f"loss: {loss.item():.2f}")
+                self.logger.log_batch_info(idx, len(train_loader), loss.item())
 
-                    print(f"\nbatch {idx+1} of {len(train_loader)}")
-                    print(f"loss: {loss.item():.2f}\n")
-
-            logging.info("Starting validation...")
-            print("starting validation...")
+            self.logger.log_model_info("start_validation")
             dev_true, dev_pred, cur_pearson = self.predict(val_loader, self.model)
 
-            logging.info(f"Current dev pearson is {cur_pearson:.4f}, best pearson is {best_pearson:.4f}")
-            print("Current dev pearson is {:.4f}, best pearson is {:.4f}".format(cur_pearson, best_pearson))
+            self.logger.log_model_info("finished_validation", cur_pearson, best_pearson)
             if cur_pearson > best_pearson:
                 best_pearson = cur_pearson
-                print("Saving the model...")
+                self.logger.log_saving_model(f"{save_path}_{self.batch_size}b_{self.seed}s")
                 torch.save(self.model.state_dict(), f"{save_path}_{self.batch_size}b_{self.seed}s")
 
-            logging.info(f"Time costed : {round(time.time() - start_time, 3)}s")
-            print("Time costed : {}s \n".format(round(time.time() - start_time, 3)))
-
+            self.logger.log_time_cost(start_time, time.time())
 
         # plot the loss
         DevUtils.plot_loss(losses, model_name, curr_time)
