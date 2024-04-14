@@ -5,6 +5,7 @@ from transformers import pipeline
 from torch import Tensor
 import torch
 from transformers import XLMRobertaForSequenceClassification
+from torch.utils.data import TensorDataset, DataLoader
 
 class TextSummarizer(Model):
     def __init__(self, params_dict, dev, curr_time: str):
