@@ -8,8 +8,8 @@ from transformers import XLMRobertaForSequenceClassification
 from torch.utils.data import TensorDataset, DataLoader
 
 class TextSummarizer(Model):
-    def __init__(self, params_dict, dev, curr_time: str):
-        super().__init__(params_dict)
+    def __init__(self, params_dict, dev, log_dir: str, curr_time: str):
+        super().__init__(params_dict, log_dir)
         self.params_dict = params_dict
         self.summarizer = pipeline("summarization", model=params_dict["summarizer_model"])
         self.curr_time = curr_time
