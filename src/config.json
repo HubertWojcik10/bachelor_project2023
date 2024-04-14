@@ -12,7 +12,7 @@
     "train_size": 0.8,
     "shuffle": true,
     "model_save_path": "../saved_models/baseline/best_baseline.pth",
-    "summarizer_save_path": "../saved_models/text_summarizer/best_summarizer.pth",
+    "summarizer_save_path": "../saved_models/text_summarizer/best_summarizer",
     "chunk_combinations_save_path": "../saved_models/chunk_combinations/best_chunk_combinations.pth",
     "log_dir": "../logs",
     "train_on": "gpu",

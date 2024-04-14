@@ -222,7 +222,7 @@ class ChunkCombinationsModel(Model):
             train_data = self.chunker.create_combinations(train_data)
             train_batched_data, val_batched_data = self.split_train_data(train_data)
 
-            save_path = f"{self.params_dict["chunk_combinations_save_path"][:-4]}_{self.batch_size}b_{self.seed}s"
+            save_path = f'{self.params_dict["chunk_combinations_save_path"][:-4]}_{self.batch_size}b_{self.seed}s'
             self.train(train_batched_data, val_batched_data, save_path)
         else:
             test_data = self.chunker.create_chunks(test_data)
@@ -231,8 +231,7 @@ class ChunkCombinationsModel(Model):
             test_batched_data = self.split_test_data(test_data)
 
             model = XLMRobertaForSequenceClassification.from_pretrained(self.params_dict["model"], num_labels=1)
-            model_save_path = f"{self.params_dict["chunk_combinations_save_path"][:-4]}_{self.batch_size}b_{self.seed}s.pth"
-            print(model_save_path)
+            model_save_path = f"{self.params_dict['chunk_combinations_save_path'][:-4]}_{self.batch_size}b_{self.seed}s.pth"
             model.load_state_dict(torch.load(model_save_path))
             
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
