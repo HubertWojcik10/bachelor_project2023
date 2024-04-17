@@ -19,7 +19,7 @@ class ChunkCombinationsModel(Model):
         Model nr 4: Create combinations of chunks and train the model
     """
     def __init__(self, params_dict:  Dict[str, any], curr_time: str, log_dir: str, dev : bool = False) -> None:
-        super().__init__(params_dict)
+        super().__init__(params_dict, log_dir)
         self.curr_time = time.strftime("%Y%m%d-%H%M%S")
         self.chunker = Chunker(self.tokenizer, 255)
         self.sep_token_id = self.tokenizer.sep_token_id

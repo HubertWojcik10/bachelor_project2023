@@ -33,13 +33,13 @@ if __name__ == "__main__":
     dev = False
 
     if args.model == 1:
-        baseline = Baseline(params_dict=params, dev=dev, curr_time=curr_time)
+        baseline = Baseline(params_dict=params, dev=dev, curr_time=curr_time, log_dir=log_dir)
         if args.train:
             baseline.run(train=True)
         else:
             baseline.run(train=False)
     elif args.model == 2:
-        text_summarizer = TextSummarizer(params_dict=params, dev=dev, curr_time=curr_time)
+        text_summarizer = TextSummarizer(params_dict=params, dev=dev, curr_time=curr_time, log_dir=log_dir)
         if args.train:
             text_summarizer.run(train=True)
         else:

@@ -9,11 +9,12 @@ from transformers import XLMRobertaForSequenceClassification
 import logging
 
 class Baseline(Model):
-    def __init__(self, params_dict, curr_time: str, dev: bool = False):
-        super().__init__(params_dict)
+    def __init__(self, params_dict, curr_time: str, log_dir: str, dev: bool = False):
+        super().__init__(params_dict, log_dir)
         self.dev = dev
         self.params_dict = params_dict
         self.curr_time = curr_time
+        self.log_dir = log_dir
 
     def shorten_text(self, text: str) -> Tensor:
         """
@@ -28,6 +29,13 @@ class Baseline(Model):
         else:
             shorten_ids = tokenized_text["input_ids"].tolist()[0] + [self.tokenizer.pad_token_id] * (254 - tokenized_text["input_ids"].shape[1])
         return self.tokenizer.decode(shorten_ids) 
+
+    def replace_underscore_with_zero_in_pair_ids(self, df):
+        df['pair_id'] = df['pair_id'].str.replace("_", "0")
+        
+        df['pair_id'] = pd.to_numeric(df['pair_id'], errors='coerce')
+        
+        return df
     
     def run(self, train: bool = True) -> None:
         """
@@ -60,7 +68,11 @@ class Baseline(Model):
             test_input_ids, test_attention_mask = self.tokenize_texts(test_data, col1="text1_short", col2="text2_short")
             test_score = torch.tensor(test_data["overall"]).float()
 
-            test_loader = DataLoader(TensorDataset(test_input_ids, test_attention_mask, test_score), batch_size=self.batch_size, shuffle=self.shuffle, num_workers=4)
+            test_data = self.replace_underscore_with_zero_in_pair_ids(test_data)
+            pair_ids = torch.tensor(test_data["pair_id"]).float()
+
+
+            test_loader = DataLoader(TensorDataset(test_input_ids, test_attention_mask, test_score, pair_ids), batch_size=self.batch_size, shuffle=self.shuffle, num_workers=4)
             dev_true, dev_pred, cur_pearson = self.predict(test_loader, model, self.curr_time, test=True)
 
             print(f"Test Pearson: {cur_pearson}")
