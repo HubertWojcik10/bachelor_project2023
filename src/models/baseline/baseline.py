@@ -69,10 +69,11 @@ class Baseline(Model):
             test_score = torch.tensor(test_data["overall"]).float()
 
             test_data = self.replace_underscore_with_zero_in_pair_ids(test_data)
-            pair_ids = torch.tensor(test_data["pair_id"]).float()
+            id1 = torch.tensor(test_data["id1"]).long()
+            id2 = torch.tensor(test_data["id2"]).long()
 
 
-            test_loader = DataLoader(TensorDataset(test_input_ids, test_attention_mask, test_score, pair_ids), batch_size=self.batch_size, shuffle=self.shuffle, num_workers=4)
+            test_loader = DataLoader(TensorDataset(test_input_ids, test_attention_mask, test_score, id1, id2), batch_size=self.batch_size, shuffle=self.shuffle, num_workers=4)
             dev_true, dev_pred, cur_pearson = self.predict(test_loader, model, self.curr_time, test=True)
 
             print(f"Test Pearson: {cur_pearson}")

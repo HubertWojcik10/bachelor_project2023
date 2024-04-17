@@ -115,9 +115,10 @@ class Model:
         self.logger.log_model_info("start_prediction")
         model.eval()
         dev_true, dev_pred = [], []
-        pair_ids = []
+        id1s = []
+        id2s = []
 
-        for idx, (ids, att, val, pair_id) in enumerate(loader):
+        for idx, (ids, att, val, id1, id2) in enumerate(loader):
             self.logger.log_test_batch_info(idx, len(loader))
             ids, att, val = ids.to(self.device), att.to(self.device), val.to(self.device)
             with torch.no_grad():
@@ -127,13 +128,15 @@ class Model:
                 dev_true.extend(val.cpu().numpy().tolist())
                 dev_pred.extend(logits.cpu().flatten().numpy().tolist())
 
-                pair_ids.append(pair_id)
+                id1s.extend(id1.cpu().numpy().tolist())
+                id2s.extend(id2.cpu().numpy().tolist())
 
+        print(len(dev_true), len(dev_pred))
         cur_pearson = np.corrcoef(dev_true, dev_pred)[0][1]
         self.logger.log_model_info("finished_prediction", cur_pearson)
 
         if test: 
-            DevUtils.save_true_pred_csv(dev_true, dev_pred, curr_time, model_name, pair_ids)
+            DevUtils.save_true_pred_csv(dev_true, dev_pred, curr_time, model_name, id1s, id2s)
 
         return dev_true, dev_pred, cur_pearson
 
