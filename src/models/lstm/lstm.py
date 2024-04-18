@@ -41,6 +41,7 @@ class LSTMOnXLMRoberta(nn.Module):
 
     def get_data(self, path):
         df = pd.read_csv(path)
+        df = df.head(200)
         return df
     
     def chunk_data(self, df):
@@ -87,7 +88,7 @@ class LSTMOnXLMRoberta(nn.Module):
         output_val= np.array([t.item() for t in output_val])
         return np.corrcoef(labels_val, output_val)[0][1]
     
-    def predict(self, input_ids_val, batch_size = 8):
+    def predict(self, input_ids_val, batch_size = 4):
         """
             Evaluate the model """ 
         logging.info("Evaluating the model...")
@@ -109,7 +110,7 @@ class LSTMOnXLMRoberta(nn.Module):
 
         return output_val   
 
-    def train_model(self,train_dff,batch_size = 8, epochs =5):
+    def train_model(self,train_dff,batch_size = 4, epochs =5):
         """
             Train the model
         """
@@ -121,8 +122,6 @@ class LSTMOnXLMRoberta(nn.Module):
             self.train()
             train_df = train_dff.sample(frac=1).reset_index(drop=True) #shuffle 
             train_df, val_df = train_df[:int(len(train_df) * 0.8)], train_df[int(len(train_df) * 0.8):].reset_index(drop=True)
-            print(train_df["pair_ids"], train_df["overall"])
-            break
             input_ids_train, labels_train = self.chunk_data(train_df)            
             input_ids_val, labels_val = self.chunk_data(val_df)
 
