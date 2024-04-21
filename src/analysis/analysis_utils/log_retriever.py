@@ -5,7 +5,7 @@ class LogRetreiver:
     def __init__(self, test_path="../../../data/test/merged_test_data.csv", model="baseline"):
         self.test_df = pd.read_csv(test_path)
         self.model = model
-        self.logs_dir = f"../../../logs/{model}/"
+        self.logs_dir = f"../../logs/{model}/"
 
     def get_logs(self):
         """

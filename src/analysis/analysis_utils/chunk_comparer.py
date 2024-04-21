@@ -117,7 +117,7 @@ class ChunkComparer(LogRetreiver):
         """
 
         df["chunk_comb"] = df.apply(lambda x: x["chunk_num1"] * x["chunk_num2"], axis=1)
-        _, ax = plt.subplots(1, 1, figsize=(10, 10))
+        _, ax = plt.subplots(1, 1, figsize=(6, 4))
         # create a histogram of using seaborn for the chunk combinations
         sns.histplot(df["chunk_comb"], bins=range(0, 30, 2), alpha=0.7)
         ax.set_title("Chunk Combination Number")
@@ -132,13 +132,13 @@ class ChunkComparer(LogRetreiver):
         """
 
         #create a histogram of the chunk number for text1 and text2 with a max of 20 chunks and a bin size of 2
-        fig, ax = plt.subplots(1, 2, figsize=(20, 10))
-        ax[0].hist(df["chunk_num1"], bins=range(0, 20, 2), color="blue", alpha=0.7)
+        fig, ax = plt.subplots(1, 2, figsize=(10, 5))
+        ax[0].hist(df["chunk_num1"], bins=range(0, 20, 2), alpha=0.7)
         ax[0].set_title("Text1 Chunk Number")
         ax[0].set_xlabel("Number of Chunks")
         ax[0].set_ylabel("Frequency")
 
-        ax[1].hist(df["chunk_num2"], bins=range(0, 20, 2), color="red", alpha=0.7)
+        ax[1].hist(df["chunk_num2"], bins=range(0, 20, 2), alpha=0.7)
         ax[1].set_title("Text2 Chunk Number")
         ax[1].set_xlabel("Number of Chunks")
         ax[1].set_ylabel("Frequency")
