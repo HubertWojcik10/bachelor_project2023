@@ -1,0 +1,256 @@
+13-04-2024 12:34:19 root:INFO:Params:
+{'train_data_path': '../data/train/train.csv', 'test_data_path': '../data/test/merged_test_data.csv', 'summary_train_data_path': '../data/train/train_sum.csv', 'summary_test_data_path': '../data/test/merged_test_data.csv', 'rounding_strategy': 'round_up', 'model': 'xlm-roberta-base', 'summarizer_model': 'Falconsai/text_summarization', 'batch_size': 4, 'epochs': 5, 'learning_rate': 1e-05, 'train_size': 0.8, 'shuffle': True, 'model_save_path': '../saved_models/baseline/best_baseline.pth', 'summarizer_save_path': '../saved_models/text_summarizer/best_summarizer', 'chunk_combinations_save_path': '../saved_models/chunk_combinations/best_chunk_combinations.pth', 'log_dir': '../logs', 'train_on': 'gpu', 'random_seed': 40}
+13-04-2024 12:34:19 urllib3.connectionpool:DEBUG:Starting new HTTPS connection (1): huggingface.co:443
+13-04-2024 12:34:20 urllib3.connectionpool:DEBUG:https://huggingface.co:443 "HEAD /xlm-roberta-base/resolve/main/tokenizer_config.json HTTP/1.1" 200 0
+13-04-2024 12:34:21 urllib3.connectionpool:DEBUG:https://huggingface.co:443 "HEAD /xlm-roberta-base/resolve/main/config.json HTTP/1.1" 200 0
+13-04-2024 12:34:21 urllib3.connectionpool:DEBUG:https://huggingface.co:443 "HEAD /xlm-roberta-base/resolve/main/config.json HTTP/1.1" 200 0
+13-04-2024 12:34:23 root:INFO:Running in production (full dataset) mode...
+13-04-2024 12:34:25 root:INFO:Running in production (full dataset) mode...
+13-04-2024 12:34:43 urllib3.connectionpool:DEBUG:https://huggingface.co:443 "HEAD /xlm-roberta-base/resolve/main/config.json HTTP/1.1" 200 0
+13-04-2024 12:34:44 urllib3.connectionpool:DEBUG:https://huggingface.co:443 "HEAD /xlm-roberta-base/resolve/main/config.json HTTP/1.1" 200 0
+13-04-2024 12:34:45 utils.logger:INFO:Starting prediction...
+13-04-2024 12:34:45 utils.logger:INFO:batch 1 of 1220
+13-04-2024 12:34:45 utils.logger:INFO:Memory used: 1.5%
+13-04-2024 12:34:49 utils.logger:INFO:batch 11 of 1220
+13-04-2024 12:34:49 utils.logger:INFO:Memory used: 1.5%
+13-04-2024 12:34:52 utils.logger:INFO:batch 21 of 1220
+13-04-2024 12:34:52 utils.logger:INFO:Memory used: 1.5%
+13-04-2024 12:34:55 utils.logger:INFO:batch 31 of 1220
+13-04-2024 12:34:55 utils.logger:INFO:Memory used: 1.5%
+13-04-2024 12:34:58 utils.logger:INFO:batch 41 of 1220
+13-04-2024 12:34:58 utils.logger:INFO:Memory used: 1.5%
+13-04-2024 12:35:00 utils.logger:INFO:batch 51 of 1220
+13-04-2024 12:35:00 utils.logger:INFO:Memory used: 1.5%
+13-04-2024 12:35:03 utils.logger:INFO:batch 61 of 1220
+13-04-2024 12:35:03 utils.logger:INFO:Memory used: 1.5%
+13-04-2024 12:35:06 utils.logger:INFO:batch 71 of 1220
+13-04-2024 12:35:06 utils.logger:INFO:Memory used: 1.5%
+13-04-2024 12:35:10 utils.logger:INFO:batch 81 of 1220
+13-04-2024 12:35:10 utils.logger:INFO:Memory used: 1.5%
+13-04-2024 12:35:12 utils.logger:INFO:batch 91 of 1220
+13-04-2024 12:35:12 utils.logger:INFO:Memory used: 1.5%
+13-04-2024 12:35:15 utils.logger:INFO:batch 101 of 1220
+13-04-2024 12:35:15 utils.logger:INFO:Memory used: 1.5%
+13-04-2024 12:35:17 utils.logger:INFO:batch 111 of 1220
+13-04-2024 12:35:17 utils.logger:INFO:Memory used: 1.5%
+13-04-2024 12:35:20 utils.logger:INFO:batch 121 of 1220
+13-04-2024 12:35:20 utils.logger:INFO:Memory used: 1.5%
+13-04-2024 12:35:23 utils.logger:INFO:batch 131 of 1220
+13-04-2024 12:35:23 utils.logger:INFO:Memory used: 1.8%
+13-04-2024 12:35:25 utils.logger:INFO:batch 141 of 1220
+13-04-2024 12:35:25 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:35:28 utils.logger:INFO:batch 151 of 1220
+13-04-2024 12:35:28 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:35:31 utils.logger:INFO:batch 161 of 1220
+13-04-2024 12:35:31 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:35:34 utils.logger:INFO:batch 171 of 1220
+13-04-2024 12:35:34 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:35:37 utils.logger:INFO:batch 181 of 1220
+13-04-2024 12:35:37 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:35:40 utils.logger:INFO:batch 191 of 1220
+13-04-2024 12:35:40 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:35:42 utils.logger:INFO:batch 201 of 1220
+13-04-2024 12:35:42 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:35:45 utils.logger:INFO:batch 211 of 1220
+13-04-2024 12:35:45 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:35:48 utils.logger:INFO:batch 221 of 1220
+13-04-2024 12:35:48 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:35:51 utils.logger:INFO:batch 231 of 1220
+13-04-2024 12:35:51 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:35:54 utils.logger:INFO:batch 241 of 1220
+13-04-2024 12:35:54 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:35:56 utils.logger:INFO:batch 251 of 1220
+13-04-2024 12:35:56 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:35:59 utils.logger:INFO:batch 261 of 1220
+13-04-2024 12:35:59 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:02 utils.logger:INFO:batch 271 of 1220
+13-04-2024 12:36:02 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:05 utils.logger:INFO:batch 281 of 1220
+13-04-2024 12:36:05 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:08 utils.logger:INFO:batch 291 of 1220
+13-04-2024 12:36:08 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:11 utils.logger:INFO:batch 301 of 1220
+13-04-2024 12:36:11 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:13 utils.logger:INFO:batch 311 of 1220
+13-04-2024 12:36:13 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:16 utils.logger:INFO:batch 321 of 1220
+13-04-2024 12:36:16 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:19 utils.logger:INFO:batch 331 of 1220
+13-04-2024 12:36:19 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:22 utils.logger:INFO:batch 341 of 1220
+13-04-2024 12:36:22 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:25 utils.logger:INFO:batch 351 of 1220
+13-04-2024 12:36:25 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:28 utils.logger:INFO:batch 361 of 1220
+13-04-2024 12:36:28 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:31 utils.logger:INFO:batch 371 of 1220
+13-04-2024 12:36:31 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:33 utils.logger:INFO:batch 381 of 1220
+13-04-2024 12:36:33 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:37 utils.logger:INFO:batch 391 of 1220
+13-04-2024 12:36:37 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:39 utils.logger:INFO:batch 401 of 1220
+13-04-2024 12:36:39 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:42 utils.logger:INFO:batch 411 of 1220
+13-04-2024 12:36:42 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:44 utils.logger:INFO:batch 421 of 1220
+13-04-2024 12:36:44 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:47 utils.logger:INFO:batch 431 of 1220
+13-04-2024 12:36:47 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:50 utils.logger:INFO:batch 441 of 1220
+13-04-2024 12:36:50 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:53 utils.logger:INFO:batch 451 of 1220
+13-04-2024 12:36:53 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:56 utils.logger:INFO:batch 461 of 1220
+13-04-2024 12:36:56 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:36:59 utils.logger:INFO:batch 471 of 1220
+13-04-2024 12:36:59 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:01 utils.logger:INFO:batch 481 of 1220
+13-04-2024 12:37:01 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:04 utils.logger:INFO:batch 491 of 1220
+13-04-2024 12:37:04 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:07 utils.logger:INFO:batch 501 of 1220
+13-04-2024 12:37:07 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:10 utils.logger:INFO:batch 511 of 1220
+13-04-2024 12:37:10 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:12 utils.logger:INFO:batch 521 of 1220
+13-04-2024 12:37:12 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:15 utils.logger:INFO:batch 531 of 1220
+13-04-2024 12:37:15 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:17 utils.logger:INFO:batch 541 of 1220
+13-04-2024 12:37:17 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:20 utils.logger:INFO:batch 551 of 1220
+13-04-2024 12:37:20 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:23 utils.logger:INFO:batch 561 of 1220
+13-04-2024 12:37:23 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:26 utils.logger:INFO:batch 571 of 1220
+13-04-2024 12:37:26 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:28 utils.logger:INFO:batch 581 of 1220
+13-04-2024 12:37:28 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:31 utils.logger:INFO:batch 591 of 1220
+13-04-2024 12:37:31 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:34 utils.logger:INFO:batch 601 of 1220
+13-04-2024 12:37:34 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:36 utils.logger:INFO:batch 611 of 1220
+13-04-2024 12:37:36 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:39 utils.logger:INFO:batch 621 of 1220
+13-04-2024 12:37:39 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:42 utils.logger:INFO:batch 631 of 1220
+13-04-2024 12:37:42 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:45 utils.logger:INFO:batch 641 of 1220
+13-04-2024 12:37:45 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:48 utils.logger:INFO:batch 651 of 1220
+13-04-2024 12:37:48 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:51 utils.logger:INFO:batch 661 of 1220
+13-04-2024 12:37:51 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:54 utils.logger:INFO:batch 671 of 1220
+13-04-2024 12:37:54 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:37:58 utils.logger:INFO:batch 681 of 1220
+13-04-2024 12:37:58 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:00 utils.logger:INFO:batch 691 of 1220
+13-04-2024 12:38:00 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:03 utils.logger:INFO:batch 701 of 1220
+13-04-2024 12:38:03 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:06 utils.logger:INFO:batch 711 of 1220
+13-04-2024 12:38:06 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:09 utils.logger:INFO:batch 721 of 1220
+13-04-2024 12:38:09 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:12 utils.logger:INFO:batch 731 of 1220
+13-04-2024 12:38:12 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:15 utils.logger:INFO:batch 741 of 1220
+13-04-2024 12:38:15 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:18 utils.logger:INFO:batch 751 of 1220
+13-04-2024 12:38:18 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:21 utils.logger:INFO:batch 761 of 1220
+13-04-2024 12:38:21 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:23 utils.logger:INFO:batch 771 of 1220
+13-04-2024 12:38:23 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:26 utils.logger:INFO:batch 781 of 1220
+13-04-2024 12:38:26 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:29 utils.logger:INFO:batch 791 of 1220
+13-04-2024 12:38:29 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:32 utils.logger:INFO:batch 801 of 1220
+13-04-2024 12:38:32 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:35 utils.logger:INFO:batch 811 of 1220
+13-04-2024 12:38:35 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:38 utils.logger:INFO:batch 821 of 1220
+13-04-2024 12:38:38 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:41 utils.logger:INFO:batch 831 of 1220
+13-04-2024 12:38:41 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:43 utils.logger:INFO:batch 841 of 1220
+13-04-2024 12:38:43 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:46 utils.logger:INFO:batch 851 of 1220
+13-04-2024 12:38:46 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:49 utils.logger:INFO:batch 861 of 1220
+13-04-2024 12:38:49 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:51 utils.logger:INFO:batch 871 of 1220
+13-04-2024 12:38:51 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:54 utils.logger:INFO:batch 881 of 1220
+13-04-2024 12:38:54 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:38:58 utils.logger:INFO:batch 891 of 1220
+13-04-2024 12:38:58 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:00 utils.logger:INFO:batch 901 of 1220
+13-04-2024 12:39:00 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:04 utils.logger:INFO:batch 911 of 1220
+13-04-2024 12:39:04 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:06 utils.logger:INFO:batch 921 of 1220
+13-04-2024 12:39:06 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:09 utils.logger:INFO:batch 931 of 1220
+13-04-2024 12:39:09 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:12 utils.logger:INFO:batch 941 of 1220
+13-04-2024 12:39:12 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:15 utils.logger:INFO:batch 951 of 1220
+13-04-2024 12:39:15 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:18 utils.logger:INFO:batch 961 of 1220
+13-04-2024 12:39:18 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:21 utils.logger:INFO:batch 971 of 1220
+13-04-2024 12:39:21 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:23 utils.logger:INFO:batch 981 of 1220
+13-04-2024 12:39:23 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:26 utils.logger:INFO:batch 991 of 1220
+13-04-2024 12:39:26 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:29 utils.logger:INFO:batch 1001 of 1220
+13-04-2024 12:39:29 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:32 utils.logger:INFO:batch 1011 of 1220
+13-04-2024 12:39:32 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:35 utils.logger:INFO:batch 1021 of 1220
+13-04-2024 12:39:35 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:39 utils.logger:INFO:batch 1031 of 1220
+13-04-2024 12:39:39 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:42 utils.logger:INFO:batch 1041 of 1220
+13-04-2024 12:39:42 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:45 utils.logger:INFO:batch 1051 of 1220
+13-04-2024 12:39:45 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:48 utils.logger:INFO:batch 1061 of 1220
+13-04-2024 12:39:48 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:50 utils.logger:INFO:batch 1071 of 1220
+13-04-2024 12:39:50 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:53 utils.logger:INFO:batch 1081 of 1220
+13-04-2024 12:39:53 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:56 utils.logger:INFO:batch 1091 of 1220
+13-04-2024 12:39:56 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:39:59 utils.logger:INFO:batch 1101 of 1220
+13-04-2024 12:39:59 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:40:02 utils.logger:INFO:batch 1111 of 1220
+13-04-2024 12:40:02 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:40:04 utils.logger:INFO:batch 1121 of 1220
+13-04-2024 12:40:04 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:40:07 utils.logger:INFO:batch 1131 of 1220
+13-04-2024 12:40:07 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:40:10 utils.logger:INFO:batch 1141 of 1220
+13-04-2024 12:40:10 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:40:13 utils.logger:INFO:batch 1151 of 1220
+13-04-2024 12:40:13 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:40:16 utils.logger:INFO:batch 1161 of 1220
+13-04-2024 12:40:16 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:40:19 utils.logger:INFO:batch 1171 of 1220
+13-04-2024 12:40:19 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:40:22 utils.logger:INFO:batch 1181 of 1220
+13-04-2024 12:40:22 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:40:24 utils.logger:INFO:batch 1191 of 1220
+13-04-2024 12:40:24 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:40:27 utils.logger:INFO:batch 1201 of 1220
+13-04-2024 12:40:27 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:40:30 utils.logger:INFO:batch 1211 of 1220
+13-04-2024 12:40:30 utils.logger:INFO:Memory used: 1.9%
+13-04-2024 12:40:49 utils.logger:INFO:Finished prediction with pearson corr: 0.6333
