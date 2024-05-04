@@ -2,6 +2,7 @@ from typing import List, Tuple
 import numpy as np
 from collections import defaultdict
 import pandas as pd
+import torch
 
 class Chunker:
     def __init__(self, tokenizer, max_length: int):
@@ -16,6 +17,6 @@ class Chunker:
         input_ids = tokenized_text["input_ids"].tolist()[0]
         chunks = [input_ids[i:i+self.max_length] for i in range(0, len(input_ids), self.max_length)]
         chunks_padded = [self.pad(chunk) for chunk in chunks]
+
         return chunks_padded
-        
     
