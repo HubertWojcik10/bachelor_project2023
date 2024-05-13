@@ -34,7 +34,7 @@ class ChunkComparer(LogRetreiver):
         """
             Merge the dfs and average the correlation
         """
-        chunk_buckets = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+        chunk_buckets = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26]
         correlations = defaultdict(dict)
         merged_df["chunk_comb"] = merged_df["chunk_num1"] * merged_df["chunk_num2"]
 
