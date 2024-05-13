@@ -20,8 +20,6 @@ class Baseline(Model):
         """
             Tokenize the input text and shorten it to 256 tokens. Then, return decoded text
         """
-
-        logging.info("Shortening text...")
         tokenized_text = self.tokenizer(text, return_tensors="pt", padding=False, truncation=False, add_special_tokens=False, max_length = None)
 
         if tokenized_text["input_ids"].shape[1] > 254:
@@ -31,6 +29,9 @@ class Baseline(Model):
         return self.tokenizer.decode(shorten_ids) 
 
     def replace_underscore_with_zero_in_pair_ids(self, df):
+        """
+            Replace the underscore with zero in the pair_id column (for saving the dataframe with logits)
+        """
         df['pair_id'] = df['pair_id'].str.replace("_", "0")
         
         df['pair_id'] = pd.to_numeric(df['pair_id'], errors='coerce')
@@ -57,7 +58,7 @@ class Baseline(Model):
         else:
             model = XLMRobertaForSequenceClassification.from_pretrained(self.model_name, num_labels=1)
 
-            save_model_path = f"{self.model_save_path[:-4]}_{self.batch_size}b_{self.seed}s.pth"
+            save_model_path = f"{self.model_save_path}_{self.batch_size}b_{self.seed}s.pth"
             model.load_state_dict(torch.load(save_model_path))
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             model.to(device)
@@ -74,7 +75,7 @@ class Baseline(Model):
 
 
             test_loader = DataLoader(TensorDataset(test_input_ids, test_attention_mask, test_score, id1, id2), batch_size=self.batch_size, shuffle=self.shuffle, num_workers=4)
-            dev_true, dev_pred, cur_pearson = self.predict(test_loader, model, self.curr_time, test=True)
+            dev_true, dev_pred, cur_pearson = self.predict(test_loader, model, self.curr_time, validation=False)
 
             print(f"Test Pearson: {cur_pearson}")
 

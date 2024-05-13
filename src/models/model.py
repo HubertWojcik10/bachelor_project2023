@@ -15,7 +15,6 @@ from utils.logger import Logger
 
 class Model:
     def __init__(self, params_dict: dict, log_dir: str):
-        self.rounding_strategy = params_dict["rounding_strategy"]
         self.model_name = params_dict["model"]
         self.batch_size = params_dict["batch_size"]
         self.epochs = params_dict["epochs"]
@@ -108,7 +107,7 @@ class Model:
 
         return train_loader, val_loader
 
-    def predict(self, loader: DataLoader, model, curr_time: str = "", model_name: str = "baseline", test: bool = False) -> List:
+    def predict(self, loader: DataLoader, model, curr_time: str = "", model_name: str = "baseline", validation: bool = True) -> List:
         """
             Predict the scores
         """
@@ -118,24 +117,32 @@ class Model:
         id1s = []
         id2s = []
 
-        for idx, (ids, att, val, id1, id2) in enumerate(loader):
-            self.logger.log_test_batch_info(idx, len(loader))
-            ids, att, val = ids.to(self.device), att.to(self.device), val.to(self.device)
-            with torch.no_grad():
-                output = model(input_ids=ids, attention_mask=att)
-                logits = output.logits
+        if not validation:
+            for idx, (ids, att, val, id1, id2) in enumerate(loader):
+                ids, att, val = ids.to(self.device), att.to(self.device), val.to(self.device)
+                with torch.no_grad():
+                    output = model(input_ids=ids, attention_mask=att)
+                    logits = output.logits
 
-                dev_true.extend(val.cpu().numpy().tolist())
-                dev_pred.extend(logits.cpu().flatten().numpy().tolist())
+                    dev_true.extend(val.cpu().numpy().tolist())
+                    dev_pred.extend(logits.cpu().flatten().numpy().tolist())
 
-                id1s.extend(id1.cpu().numpy().tolist())
-                id2s.extend(id2.cpu().numpy().tolist())
+                    id1s.extend(id1.cpu().numpy().tolist())
+                    id2s.extend(id2.cpu().numpy().tolist())
+        else:
+            for idx, (ids, att, val) in enumerate(loader):
+                ids, att, val = ids.to(self.device), att.to(self.device), val.to(self.device)
+                with torch.no_grad():
+                    output = model(input_ids=ids, attention_mask=att)
+                    logits = output.logits
 
-        print(len(dev_true), len(dev_pred))
+                    dev_true.extend(val.cpu().numpy().tolist())
+                    dev_pred.extend(logits.cpu().flatten().numpy().tolist())
+
         cur_pearson = np.corrcoef(dev_true, dev_pred)[0][1]
         self.logger.log_model_info("finished_prediction", cur_pearson)
 
-        if test: 
+        if not validation:
             DevUtils.save_true_pred_csv(dev_true, dev_pred, curr_time, model_name, id1s, id2s)
 
         return dev_true, dev_pred, cur_pearson
@@ -174,13 +181,13 @@ class Model:
                 self.logger.log_batch_info(idx, len(train_loader), loss.item())
 
             self.logger.log_model_info("start_validation")
-            dev_true, dev_pred, cur_pearson = self.predict(val_loader, self.model)
+            dev_true, dev_pred, cur_pearson = self.predict(val_loader, self.model, validation=True)
 
             self.logger.log_model_info("finished_validation", cur_pearson, best_pearson)
             if cur_pearson > best_pearson:
                 best_pearson = cur_pearson
                 self.logger.log_saving_model(f"{save_path}_{self.batch_size}b_{self.seed}s")
-                torch.save(self.model.state_dict(), f"{save_path}_{self.batch_size}b_{self.seed}s")
+                torch.save(self.model.state_dict(), f"{save_path}_{self.batch_size}b_{self.seed}s.pth")
 
             self.logger.log_time_cost(start_time, time.time())
 

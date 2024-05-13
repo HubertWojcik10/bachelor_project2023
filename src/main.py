@@ -30,7 +30,7 @@ if __name__ == "__main__":
                 level=logging.DEBUG)
 
     logging.info(f"Params:\n{params}")
-    dev = False
+    dev = True
 
     if args.model == 1:
         baseline = Baseline(params_dict=params, dev=dev, curr_time=curr_time, log_dir=log_dir)
