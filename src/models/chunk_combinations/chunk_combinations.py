@@ -98,10 +98,7 @@ class ChunkCombinationsModel(Model):
                         output = self.model(input_ids=ids, attention_mask=att)
                         logits_list.append(output.logits)
                         
-                    print(f"--\n{logits_list}")
                     aggregated_logits.append(torch.mean(torch.stack(logits_list), dim=0))
-                    print(torch.mean(torch.stack(logits_list), dim=0))
-                    print(f"label: {label}")
 
                 # convert the lists to tensors and move them to the device
                 labels_tensor = torch.tensor(labels, dtype=torch.float).to(self.device)
