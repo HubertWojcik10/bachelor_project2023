@@ -12,6 +12,7 @@
     "shuffle": true,
     "model_save_path": "../saved_models/baseline/best_baseline",
     "summarizer_save_path": "../saved_models/text_summarizer/best_summarizer",
+    "lstm_save_path": "../saved_models/xlmroberta_on_lstm/best_lstm.pth",
     "chunk_combinations_save_path": "../saved_models/chunk_combinations/best_chunk_combinations.pth",
     "log_dir": "../logs",
     "train_on": "gpu",
